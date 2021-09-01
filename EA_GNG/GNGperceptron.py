@@ -10,10 +10,11 @@ from EA_GNG.core.dataset import splitDataset
 from EA_GNG.print import plotRocCurve_fromPath
 import pickle
 
-import EA_GNG.perceptronBiClase as pctron
-# import EA_GNG.perceptronBackpropagationBiclase as pctron
+# import EA_GNG.perceptronBiClase as pctron
+import EA_GNG.perceptronBackpropagationBiclase as pctron
 
 def GNG_perceptron(param_dict_gng, param_dict_perceptron, df, saving_path, nameDataset = "", verbose= False, savedGNG=False, saveProcess=False, target = "DX_bl"):
+    
     trainDataX, trainLabelsTrueY, testDataX, testLabelsTrueY = splitDataset(df, 0.20, target, param_dict_gng['seed'])
     
     trainLabelsTrueY.replace(2,0, True)
@@ -53,25 +54,28 @@ def GNG_perceptron(param_dict_gng, param_dict_perceptron, df, saving_path, nameD
         print("neuroas vecinas activacion: ", param_dict_perceptron["activation_neigbor"])
         print("Nº neuronas en el grafo preguardado: ", len(gng_neupy.graph.nodes))
         
-        # Entrenamiento único ( es decir con límite/umbral establecido )
-        limit=0
-        # percep = pctron.perceptron(param_dict_perceptron, limit, gng_neupy) #MyGNG perceptron after a GNG graph trained
-        percep = pctron.perceptron(param_dict_perceptron, limit) #Only perc
-        percep.train(trainDataX, trainLabelsTrueY, testDataX, testLabelsTrueY,saving_path) #MyGNG perceptron after a GNG graph trained
-        
+      
         # Entrenamiento Variando límite/umbral y exposición de curva Roc final. 
         
+        limit = 1
+        while( limit >= 0):
+            # print("\n   limite: ", limit)
+            """Asegurar el parametro gng_neupy se incluye!"""
+            # percep = pctron.perceptron(param_dict_perceptron, limit, gng_neupy) #MyGNG perceptron after a GNG graph trained
+            percep = pctron.perceptron(param_dict_perceptron, limit) #Only perceptron!
+            percep.train(trainDataX, trainLabelsTrueY, testDataX, testLabelsTrueY,saving_path) #MyGNG perceptron after a GNG graph trained
+            limit -= 0.02
         
-        # limit = 1
-        # while( limit >= 0):
-        #     print("\n   limite: ", limit)
-        #     """Asegurar el parametro gng_neupy se incluye!"""
-        #     # percep = pctron.perceptron(param_dict_perceptron, limit, gng_neupy) #MyGNG perceptron after a GNG graph trained
-        #     percep = pctron.perceptron(param_dict_perceptron, limit) #Only perceptron!
-        #     percep.train(trainDataX, trainLabelsTrueY, testDataX, testLabelsTrueY,saving_path) #MyGNG perceptron after a GNG graph trained
-        #     limit -= 0.02
         
-        # plotRocCurve_fromPath(saving_path)
+        # # Entrenamiento único ( es decir con límite/umbral establecido )
+        # limit=0
+        # # percep = pctron.perceptron(param_dict_perceptron, limit, gng_neupy) #MyGNG perceptron after a GNG graph trained
+       
+        # percep = pctron.perceptron(param_dict_perceptron, limit) #Only perceptron!
+        # percep.train(trainDataX, trainLabelsTrueY, testDataX, testLabelsTrueY,saving_path) #MyGNG perceptron after a GNG graph trained
+        
+        
+        plotRocCurve_fromPath(saving_path)
 
 
 

@@ -8,13 +8,10 @@ Created on Wed Oct 14 12:48:39 2020
 
 from sklearn.metrics import classification_report, accuracy_score, precision_score, recall_score, confusion_matrix, homogeneity_completeness_v_measure, davies_bouldin_score
 from sklearn.metrics import adjusted_rand_score, silhouette_score, fowlkes_mallows_score, normalized_mutual_info_score, calinski_harabasz_score
-from sklearn.metrics import roc_auc_score, roc_curve
+from sklearn.metrics import  roc_curve
 
 import pandas as pd
 import numpy as np
-# import os.path
-
-# import matplotlib.pyplot as plt
 
 from EA_GNG.core.label import toListofStrings
 
@@ -44,6 +41,20 @@ def prettyConfusionMatrix(labelsTrue, labelsPred, labelsOrdering = None, verbose
     
 def calculateClassificationMetrics(labelsTrue, labelsPred, labelsOrdering = None, verbose = False):
     
+    
+    falsos_positivos,verdaderos_positivos,_ = roc_curve(labelsTrue, labelsPred)
+    if len(falsos_positivos) == 2:
+        falsos_positivos = 0
+    else:
+        falsos_positivos = falsos_positivos[1]
+    
+    if len(verdaderos_positivos) == 2:
+        verdaderos_positivos = 0
+    else:
+        verdaderos_positivos = verdaderos_positivos[1]
+        
+    
+ 
     labelsTrue = toListofStrings(labelsTrue)
     labelsPred = toListofStrings(labelsPred)
     
@@ -70,16 +81,14 @@ def calculateClassificationMetrics(labelsTrue, labelsPred, labelsOrdering = None
         else:
             f1Score = 2*(precision * recall) / (precision + recall)
 
-
-    falsos_positivos,verdaderos_positivos,_ = roc_curve(labelsTrue, labelsPred)
-        
+       
     if verbose:
         classificationRep = classification_report(labelsTrue, labelsPred, target_names= labelsOrdering, output_dict=False)
         print(classificationRep) 
         
     return accuracy, precision, recall, f1Score, falsos_positivos, verdaderos_positivos
   
-   
+
 def evaluateUnsupervisedClusteringQuality(data, labelsPred, seed = 1, verbose = False):
     
     labelsPred = toListofStrings(labelsPred)
@@ -105,8 +114,8 @@ def evaluateUnsupervisedClusteringQuality(data, labelsPred, seed = 1, verbose = 
         print('daviesBouldin= ', dbs,'calinski= ', calinski,'silhouette= ', sil)
         
     return dbs, calinski, sil
-  
-   
+
+
 def evaluateSupervisedClusteringQuality(data, labelsTrue, labelsPred, seed = 1, verbose = False):
     
     labelsTrue = toListofStrings(labelsTrue)
@@ -137,21 +146,63 @@ def evaluateSupervisedClusteringQuality(data, labelsTrue, labelsPred, seed = 1, 
     return homogeneity, completeness, v_measure, ari, normalizedmutualInfo, fowlkes, purity
   
 
-def saveClassificationMetrics(count, saving_path, metrics):
+def saveClassificationMetrics(saving_path, metrics, count = 1):
     
-     if len(count) == 1 and count[0] == '1':
-         pass
+    if count == '1':
+        # Open file to save the metrics for first time. It is reset if the file already exists.
+        file_Classification_metrics = open("{}config_param_clusteringQualitySupervisedMetrics.txt".format(saving_path), "w") #Open/writting over file, unsupervised metrics obtained
+        file_Classification_metrics.write("config;params;accuracy;precision;recall;f1Score;sensitivity;specificity\n")
+    else:
+        # Open file that already exists or create it.
+        file_Classification_metrics = open("{}config_param_clusteringQualitySupervisedMetrics.txt".format(saving_path), "a") #Open/Writting continue file, unsupervised metrics obtained
 
-def saveSupervisedClusteringMetrics(count, saving_path, metrics):
+    sTitle= "" # Pasar configuración Por Parámetro!
+    # Save parameters and metrics results
+
+    file_Classification_metrics.write("config {};{};accuracy:{};precision:{};recall:{};f1Score:{};sensitivity:{};specificity:{}\n".format(count, sTitle.replace('\n',' '),
+                                                                                                             metrics['accuracy'], metrics['precision'], metrics['recall'], metrics['f1Score'], metrics['l'], metrics["k"]))
+   
+    file_Classification_metrics.close()
     
-    if len(count) == 1 and count[0] == '1':
-        pass
+     
+     
 
-def saveUnsupervisedClusteringMetrics(count, saving_path, metrics):
+def saveSupervisedClusteringMetrics(saving_path, metrics, count = 1):
     
-    if len(count) == 1 and count[0] == '1':
-        pass
+    if count == '1':
+        # Open file to save the metrics for first time. It is reset if the file already exists.
+        file_supervised_clusteringQuality_metrics = open("{}config_param_clusteringQualitySupervisedMetrics.txt".format(saving_path), "w") #Open/writting over file, unsupervised metrics obtained
+        file_supervised_clusteringQuality_metrics.write("config;params;homogeneity;completeness;v_measure;adjustedrand;normalizedmutualInfo;fowlkes;purity\n')\n")
+    else:
+        # Open file that already exists or create it.
+        file_supervised_clusteringQuality_metrics = open("{}config_param_clusteringQualitySupervisedMetrics.txt".format(saving_path), "a") #Open/Writting continue file, unsupervised metrics obtained
 
+    sTitle= "" # Pasar configuración Por Parámetro!
+    # Save parameters and metrics results
+    file_supervised_clusteringQuality_metrics.write("config {};{};homogeneity:{};completeness:{};v_measure:{};adjustedrand:{};normalizedmutualInfo:{};fowlkes:{};purity:{}\n".format(count, sTitle.replace('\n',' '),
+                                                                                                                                                                                     metrics['homogeneity'], metrics['completeness'], 
+                                                                                                                                                                                     metrics['v_measure'], 
+                                                                                                                                                                                     metrics['ari'], metrics['normalizedmutualInfo'], 
+                                                                                                                                                                                     metrics['fowlkes'], metrics['purity']))
+    file_supervised_clusteringQuality_metrics.close()
+    
+
+def saveUnsupervisedClusteringMetrics(saving_path, count = 1, calinski = -1, silhouette = -1, dbs = -1):
+    
+    if count == '1':
+        # Open file to save the metrics for first time. It is reset if the file already exists.
+        file_unsupervised_clusteringQuality_metrics = open("{}config_param_clusteringQualityUnsupervisedMetrics.txt".format(saving_path), "w") #Open/writting over file, unsupervised metrics obtained
+        file_unsupervised_clusteringQuality_metrics.write("config;params;calinski;silhouette;daviesBouldin\n")
+    else:
+        # Open file that already exists or create it.
+        file_unsupervised_clusteringQuality_metrics = open("{}config_param_clusteringQualityUnsupervisedMetrics.txt".format(saving_path), "a") #Open/Writting continue file, unsupervised metrics obtained
+
+    sTitle= "" # Pasar configuración Por Parámetro!
+    # Save parameters and metrics results
+    file_unsupervised_clusteringQuality_metrics.write("config {};{};calinski:{};silhouette:{};daviesBouldin:{}\n".format(count,sTitle.replace('\n',' '),
+                                                                                                    calinski, silhouette, dbs))
+    file_unsupervised_clusteringQuality_metrics.close()
+    
 def saveMetrics(count, saving_path, metrics, sTitle=None, timeNeupyGNG=None, n_clusters=None, limit = None, bestAcc=-1):
     
     if timeNeupyGNG == None:
@@ -208,10 +259,10 @@ def saveMetrics(count, saving_path, metrics, sTitle=None, timeNeupyGNG=None, n_c
 def saveMetricsPerceptron(count, saving_path, metrics, sTitle = None, limit = None, activationNeigbors=None, bestAcc= -1):
    
 
-    falsoPositivo =  metrics["falsos_positivos"][1] #Array [0, FalsoPositivo, 1]
-    verdaderoPositivo = metrics["verdaderos_positivos"][1] #Array [0, VerdaderoPositivo, 1]
+    falsoPositivo =  metrics["falsos_positivos"] #Array [0, FalsoPositivo, 1]
+    verdaderoPositivo = metrics["verdaderos_positivos"]#Array [0, VerdaderoPositivo, 1]
     
-    if limit==1:
+    if limit==1 or limit ==0:
 
         mrn = open("{}AN{}-config_param_metricsReportNeupy.txt".format(saving_path, activationNeigbors), "w") #fichero metrica resultante
         mrn.write('config;param;limit;accuracy;precision;recall;f1Score;falsosPositivos;verdaderosPositivos\n')

@@ -7,7 +7,7 @@ Created on Mon Aug 23 19:05:52 2021
 import numpy as np
 from os import path, makedirs
 import sys
-from EA_GNG.core.method.metrics import prettyConfusionMatrix, calculateClassificationMetrics, saveMetricsPerceptron, rocCurve
+from EA_GNG.core.method.metrics import prettyConfusionMatrix, calculateClassificationMetrics, saveMetricsPerceptron
 from EA_GNG.core.figure import maketitle
 
 print("!!!!!!------Imported Perceptron backpropagation - biclass--------!!!!!!\n")
@@ -31,7 +31,6 @@ class perceptron():
     """
 
     def __init__(self, param_dict, limit, gng_neupy= None):
-        
         self.learningRate = param_dict["learningRate"]
         self.seed = param_dict["seed"]
         self.epochs = param_dict["epochs"]
@@ -40,6 +39,7 @@ class perceptron():
         self.limit = limit
         self.gng_neupy = gng_neupy
         self.param_dict = param_dict
+        print("lr:{}-epochs:{}-limit:{}".format(self.learningRate,self.epochs, self.limit))
         
         np.random.seed(self.seed)
     
@@ -118,7 +118,7 @@ class perceptron():
                 labelsPredicted = self.predict(validationDataX.to_numpy())
                 
                 metrics = dict()
-                metrics['accuracy'], metrics['precision'], metrics['recall'], metrics['f1Score'] = calculateClassificationMetrics(validationLabelY, labelsPredicted, verbose=False)
+                metrics['accuracy'], metrics['precision'], metrics['recall'], metrics['f1Score'], metrics["falsos_positivos"], metrics["verdaderos_positivos"] = calculateClassificationMetrics(validationLabelY, labelsPredicted, verbose=False)
                 
                 acc = metrics["accuracy"]
           
@@ -142,9 +142,9 @@ class perceptron():
         # saveFigureLabelsPred(validationDataX, validationLabelY, labelsPredicted, saving_path, self.count, sTitle=maketitle(self.param_dict, "perceptron"))
         
         metrics = dict()
-        metrics['accuracy'], metrics['precision'], metrics['recall'], metrics['f1Score'] = calculateClassificationMetrics(validationLabelY, labelsPredicted, verbose=False)                
-        metrics["auc"], metrics["falsos_positivos"], metrics["verdaderos_positivos"] = rocCurve(validationLabelY, labelsPredicted)
-            
+        metrics['accuracy'], metrics['precision'], metrics['recall'], metrics['f1Score'], metrics["falsos_positivos"], metrics["verdaderos_positivos"] = calculateClassificationMetrics(validationLabelY, labelsPredicted, verbose=False)                
+        
+        metrics['auc']=0.5
         dfCM = prettyConfusionMatrix(validationLabelY, labelsPredicted, verbose = False)
         confusion_matrixSavePath = '{}config{}-limit{}-Final-confusion_matrix.csv'.format(saving_path, self.count, self.limit)
         dfCM.to_csv(confusion_matrixSavePath)
@@ -155,7 +155,7 @@ class perceptron():
         saveMetricsPerceptron(self.count, saving_path, metrics, sTitle=maketitle(self.param_dict, "perceptron"), limit=self.limit, activationNeigbors=self.activationNeigbors, bestAcc=bestAcc)
         
 
-        print("Validación Final-Acc{}-auc{}".format(metrics["accuracy"], metrics["auc"]))
+        print("Validación Final-Acc{}".format(metrics["accuracy"]))
             
     
     

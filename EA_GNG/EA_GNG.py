@@ -17,12 +17,12 @@ import sys
 from joblib import Parallel, delayed
 
 from EA_GNG.core.dataset import removeNan, imputerData, loadOneDataset, ls, saveDatasets, modifyLabels, escalarValues, makeDatasetDict, takeTypeDataScaling, splitDataset
-from EA_GNG.core.figure import createFigures, saveFigures, maketitle, checkColorListAndColorRange, showdata, saveFigureLabelsPred
+from EA_GNG.core.figure import createFigures, saveFigures, maketitle, checkColorListAndColorRange, showdata
 from EA_GNG.core import gng
 
 from EA_GNG.core.method.featureSelection import featureSelectionMethods
 from EA_GNG.core.method.statistics import isPaired, isParametric, selectStatistic
-from EA_GNG.core.method.metrics import prettyConfusionMatrix, calculateClassificationMetrics, evaluateClusteringQuality, saveMetrics
+from EA_GNG.core.method.metrics import evaluateSupervisedClusteringQuality, evaluateUnsupervisedClusteringQuality, saveUnsupervisedClusteringMetrics, saveSupervisedClusteringMetrics
 
 
 # -------------------------- PREPROCESING ADNI ----------------------------------------------
@@ -287,6 +287,7 @@ def statistics(loadedDatasets, savingPath = None, target = 'DX_bl', allPaired = 
         
 # -------------------------- GROWING NEURAL GAS ----------------------------------------------    
 def growingNeuralGas(param_dict, df, saving_path, target = "DX_bl", labelsOrdering = None, verbose = False, nameDataset = 'NoNamedDataset', saveProcess = False):
+   
     np.random.seed(param_dict['seed'])
     random.seed(param_dict['seed'])
     tf.random.set_random_seed(param_dict['seed'])
@@ -308,11 +309,13 @@ def growingNeuralGas(param_dict, df, saving_path, target = "DX_bl", labelsOrderi
         
         sTitle = maketitle(param_dict, nameDataset)
         fig3d, fig, ax1, ax2 = createFigures(nameDataset, param_dict["typeDataScaling"], sTitle, param_dict['n_features'])
+        columns = df.columns.tolist()
+        showdata(trainDataX,trainLabelsTrueY, ax1, fig3d, columns, nameDataset)
     
     else:
         sTitle = ""
-        fig3d, fig, ax1, ax2 = None
-    # showdata(trainDataX,trainLabelsTrueY, ax1, fig3d, columns, nameDataset)
+        fig3d, fig, ax1, ax2 = None, None, None, None
+        
     timeNeupyGNG, n_clusters, labelsPred, bestCalinski, bestSilhouette = gng.neupy_growingneuralgas(trainDataX, param_dict, ax2, fig3d, trainLabelsY=trainLabelsTrueY, testDataX = testDataX, testLabel=testLabelsTrueY, saveProcess=saveProcess, saving_path = saving_path)
   
     print("best Calinski founded: ", bestCalinski)
@@ -323,13 +326,21 @@ def growingNeuralGas(param_dict, df, saving_path, target = "DX_bl", labelsOrderi
     if not saveProcess:
         # saveFigureLabelsPred(testDataX, testLabelsTrueY, labelsPred, saving_path, param_dict["count"], sTitle)
         metrics = dict()
-        metrics["bestCalinski"] = bestCalinski
-        metrics["bestSilhouette"] = bestSilhouette
-        metrics['dbs'], metrics['normalizedmutualInfo'], metrics['fowlkes'], metrics['calinski'], metrics['sil'] = evaluateClusteringQuality(testDataX, testLabelsTrueY, labelsPred, param_dict['seed'], verbose)
-        saveMetrics(param_dict['count'], saving_path, metrics, sTitle, timeNeupyGNG, n_clusters)
+        
+        # Not supervised metrics at end training model.
+        metrics['dbs'], metrics['calinski'], metrics['sil'] = evaluateUnsupervisedClusteringQuality(testDataX, labelsPred, param_dict['seed'], verbose)
+        saveUnsupervisedClusteringMetrics(saving_path, count = param_dict["count"], calinski = metrics['calinski'], silhouette = metrics['sil'], dbs = metrics["dbs"])
+
+        # Supervised metrics at end training model.
+        metrics['homogeneity'], metrics['completeness'], metrics['v_measure'], metrics['ari'], metrics['normalizedmutualInfo'], metrics['fowlkes'], metrics['purity'] = evaluateSupervisedClusteringQuality(testDataX, testLabelsTrueY, labelsPred, 
+                                                                                                                                                                                                             param_dict['seed'], verbose)
+        saveSupervisedClusteringMetrics(saving_path, metrics = metrics, count = param_dict["count"])
     
         ax2.set_title('GNG_NEUPY_PACKAGE - Nº clusters= {}'.format(n_clusters))
         saveFigures(fig3d, fig, saving_path, param_dict)
+        
+    else:
+        saveUnsupervisedClusteringMetrics(saving_path, count = param_dict["count"], calinski = bestCalinski, silhouette = bestSilhouette, dbs = "notCalculated")
  
     
         
@@ -365,7 +376,7 @@ def growingNeuralGas(param_dict, df, saving_path, target = "DX_bl", labelsOrderi
 # -------------------------- LOOP GROWING NEURAL GAS ----------------------------------------------        
 def loopGrowingNeuralGas_perceptron(loopDict, saving_path, loadedDatasets = None, PCA=False, PCA_n_components = 3, list_distance = (3.0, ), list_number_samples = (333, ), labelsOrdering = None, verbose = False, shuffle_data = True, seed = 1, saveProcess = False, savedGNG=False, hibrid=True):
     
-    print("ejecutando con las siguientes condiciones:\n", "savingPath:> {}\nPCA:> {} -//- NºPCA:> {}\nhibrid:> {} -//- savedGNG:> {}".format(saving_path, PCA, PCA_n_components, hibrid, savedGNG))
+    print("ejecutando con las siguientes condiciones:\n", "savingPath:> {}\nPCA:> {} -//- NºPCA:> {}\nhibrid:> {} -//- savedGNG:> {} -//- saveProcess:> {}".format(saving_path, PCA, PCA_n_components, hibrid, savedGNG, saveProcess))
     print("are you sure?")
     print("The path already exist? ", path.isdir(saving_path))
     print("introduce ok or yes to continue:")

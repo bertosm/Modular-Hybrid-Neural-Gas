@@ -8,8 +8,8 @@ Created on Tue Apr 20 13:29:24 2021
 
 import pandas as pd
 import matplotlib.pyplot as plt
-from sklearn.metrics import roc_auc_score, auc
-from EA_GNG.core.dataset import ls, loadOneDataset
+from sklearn.metrics import auc
+from EA_GNG.core.dataset import ls
 
 PlotOptions = {"AN0": {"marker":".", "linestyle":(0, (3, 1, 1, 1, 1, 1))},
                "AN1":  {"marker":".", "linestyle":"dotted"},
@@ -49,24 +49,24 @@ def plotRocCurve_fromPath(path):
     
 def plotRocCurve(filePath, AN = "ANNOT", fileAuc = None):
     
-    print(filePath)
     dfRoc = pd.read_csv(filePath, sep=";")
 
-    # print(dfRoc)
-    sensibilidad =dfRoc["falsosPositivos"]
+    sensibilidad =dfRoc["falsosPositivos"]    
+    
     sensibilidad.loc[-1] = 0
     sensibilidad.loc[50] = 1
     sensibilidad.index = sensibilidad.index + 1
     sensibilidad.sort_index(inplace=True)
     
     unoMenosEspecificidad = dfRoc["verdaderosPositivos"] 
+    
     unoMenosEspecificidad.loc[-1] = 0
     unoMenosEspecificidad.loc[50] = 1
     unoMenosEspecificidad.index = unoMenosEspecificidad.index + 1
     unoMenosEspecificidad.sort_index(inplace=True)
     
-    # print("falsosPositivos: ", sensibilidad)
-    # print("verdaderosPositivos: ", unoMenosEspecificidad)
+    print("falsosPositivos: ", sensibilidad)
+    print("verdaderosPositivos: ", unoMenosEspecificidad)
     
     try:
         aucValue = auc(sensibilidad, unoMenosEspecificidad)
@@ -102,8 +102,8 @@ def plotRocCurveConfiguration(saving_path):
     plt.close()
 
 
+# plotRocCurve_fromPath("C:/Users/Bertosm/Desktop/2PCA-onlyPerceptronBackPropagation-weight0to1/lr0.2-epch20")
 
-5
 """ versión anterior:
 
 # filepath1 = "/Users/pedrososa/Desktop/ArticuloEscrito/VersionesAnteriores/Articulo4_0/curveRocAct1.xlsx"

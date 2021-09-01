@@ -10,20 +10,17 @@ Created on Wed Oct 14 12:22:48 2020
 from operator import attrgetter
 
 import pickle
-import math
 import numpy as np
 import pandas as pd
 import time
 import tensorflow as tf
 import random
 
-from sklearn.preprocessing import normalize
-
-from os import getcwd, scandir, makedirs, path
+from os import makedirs, path
 
 from .label import labelClustersResult
 from .dataset import createPCA
-from .figure import createFigures, saveFigures, showdata, showResult, determineClusters
+from .figure import createFigures, saveBestConfig, showdata, showResult, determineClusters
 import EA_GNG.EA_GNG as gng
 
 from EA_GNG.GNGperceptron import GNG_perceptron
@@ -31,7 +28,7 @@ from EA_GNG.GNGperceptron import GNG_perceptron
 from neupy import utils
 from neupy.algorithms.competitive.growing_neural_gas import GrowingNeuralGas, NeuronNode, NeuralGasGraph, sample_data_point,StopTraining
 
-from EA_GNG.core.method.metrics import evaluateClusteringQuality
+from EA_GNG.core.method.metrics import evaluateUnsupervisedClusteringQuality
 from EA_GNG.core.method.statistics import round_decimals_down
 
 
@@ -66,7 +63,6 @@ def neupy_growingneuralgas(trainDataX, param_dict, ax, fig, trainLabelsY = None,
     #Marca de tiempo inicial
     tini = time.time()
     
-    
     #n_inputs =  Number of features in each sample.  
     #Creando el modelo GNG de NeuPy
     gng_neupy = neupy_gng(n_inputs = param_dict['n_features'],                                                                          
@@ -89,7 +85,7 @@ def neupy_growingneuralgas(trainDataX, param_dict, ax, fig, trainLabelsY = None,
     # print("train Data: ", trainDataX)
     # print("train Label: ", trainLabelsY)
     print("saving_path preGNG: ", saving_path)
-    bestCalinski, bestSilhouette = gng_neupy.train(trainDataX, trainLabelsY, X_test=testDataX, y_test=testLabel, epochs=param_dict['epochs'], saveProcess = saveProcess, saving_path=saving_path+"config{}".format(param_dict["count"]))
+    bestCalinski, bestSilhouette = gng_neupy.train(trainDataX, trainLabelsY, X_test=testDataX, y_test=testLabel, epochs=param_dict['epochs'], countConfig = param_dict["count"], saveProcess = saveProcess, saving_path=saving_path)
     
     
     #Marca de tiempo final, Tiempo que tarda en entrenar.
@@ -116,44 +112,45 @@ def neupy_growingneuralgas(trainDataX, param_dict, ax, fig, trainLabelsY = None,
 
 
 
-
-class neupy_NamedNeuronNode(NeuronNode):
-       
-       def __init__(self, weight):
-
-              NeuronNode.__init__(self, weight)
-              self.name = neuronCount.aumentarCont(1)
-            
-       def __repr__(self):
-        return "<{} error={}>".format(
-            self.__class__.__name__,
-            round(float(self.error), 6))
-        
-   
-
 def loop_gng(config, saving_path, df, PCA=False, PCA_n_components = 3, hibrid=False, typeDataScaling=None, labelsOrdering = None, nameDataset = 'NoNamedDataset', seed = 1, shuffle_data = True, verbose = False, savedGNG=False, saveProcess=False):
   
     
     # Pre processing del conjunto de datos (PCA y seleccion de características si es necesario)
     target = df.columns.tolist()[-1]
     
+    print("Initial dataset: ", df)
+    
     # df = df[["MMSCORE", "FAQSHOP", "ADAS_Q7", "DX_bl"]]
-    print(df)
+    # print("Dataset selected features")
+    
+    # normalizing Inputs v1
+    # media = np.mean(df.iloc[:, :-1])
+    # desviacion = np.std(df.iloc[:, :-1])
+    # df.iloc[:, :-1] = (df.iloc[:, :-1] - media) / desviacion
+    # print("Dataset normalized: ",df)  
+    
     
     if PCA and len(df.columns.tolist()) > 3:
         df = createPCA(df, target, n_components = PCA_n_components, verbose = True)
-        print("PCA: ", df)
+        print("PCA ", df)
+        
 
+        # normalizing Inputs!
+        # media = np.mean(df.iloc[:, :-1])
+        # desviacion = np.std(df.iloc[:, :-1])
+        # df.iloc[:, :-1] = (df.iloc[:, :-1] - media) / desviacion
+        # print("PCA normalized", df)
+        
 
     if not path.isdir("C:/Users/Bertosm/Desktop/dataset/"):
         makedirs("C:/Users/Bertosm/Desktop/dataset/")
         
         
-    # Se imprime excel con los overlapping que existen en el cuerpo de entrada. 
-    overlapping = df.groupby(df.columns.tolist(), as_index = False).size()
-    writer = pd.ExcelWriter( 'C:/Users/Bertosm/Desktop/dataset/overlappingPCA-3Comp.xlsx')
-    overlapping.to_excel(writer,'Hoja1',index=False)
-    writer.save()
+    # # Se imprime excel con los overlapping que existen en el cuerpo de entrada. 
+    # overlapping = df.groupby(df.columns.tolist(), as_index = False).size()
+    # writer = pd.ExcelWriter( 'C:/Users/Bertosm/Desktop/dataset/overlappingPCA-3Comp.xlsx')
+    # overlapping.to_excel(writer,'Hoja1',index=False)
+    # writer.save()
 
 
     listFeatures = df.columns.tolist()
@@ -192,6 +189,31 @@ def loop_gng(config, saving_path, df, PCA=False, PCA_n_components = 3, hibrid=Fa
         gng.growingNeuralGas(param_dict_gng, df,target = target, saving_path = saving_path, labelsOrdering = labelsOrdering, nameDataset = nameDataset, verbose = verbose, saveProcess=saveProcess)
     
     
+
+
+# class base_GrowingNeuralGas(BaseNetwork):
+    
+#      def __init__(self, *args, **kwargs):
+#         super(GrowingNeuralGas, self).__init__(*args, **kwargs)
+#         self.n_updates = 0
+#         self.graph = NeuralGasGraph()
+    
+
+
+
+class neupy_NamedNeuronNode(NeuronNode):
+       
+       def __init__(self, weight):
+
+              NeuronNode.__init__(self, weight)
+              self.name = neuronCount.aumentarCont(1)
+            
+       def __repr__(self):
+        return "<{} error={}>".format(
+            self.__class__.__name__,
+            round(float(self.error), 6))
+        
+   
     
 class neupy_NeuralGasGraph(NeuralGasGraph):
     
@@ -218,13 +240,17 @@ class neupy_NeuralGasGraph(NeuralGasGraph):
         
 class neupy_gng(GrowingNeuralGas):
     
+    
     def initialize_nodes(self, data):
         self.graph = neupy_NeuralGasGraph()
         for sample in sample_data_point(data, n=self.n_start_nodes):
             self.graph.add_node(neupy_NamedNeuronNode(sample.reshape(1, -1)))
             
            
-    def train(self, trainData, y_train = None, X_test = None, y_test = None, epochs=100, saveProcess=False, saving_path = None):
+    def train(self, trainData, y_train = None, X_test = None, y_test = None, epochs=100, countConfig = 1, saveProcess=False, saving_path = None):
+
+        # really rushed. It must go on the constructor!
+        self.count = countConfig
         
         print("saving_path pre training: ", saving_path)
         # print("train data preFloat: ", trainData)
@@ -330,7 +356,7 @@ class neupy_gng(GrowingNeuralGas):
                 node.error *= error_decay_rate
 
         if saveProcess and saving_path != None:
-            calinski, silhouette = saveGraphPerEpoch(graph, X_train, epoch, saving_path, y_train, X_test, y_test, data, bestCalinski, bestSilhouette, max_nodes)
+            calinski, silhouette = saveGraphPerEpoch(graph, X_train, epoch, saving_path, y_train, X_test, y_test, data, self.count, bestCalinski, bestSilhouette, max_nodes)
         else:
             calinski=0
             silhouette=-2
@@ -379,8 +405,8 @@ class neupy_gng(GrowingNeuralGas):
         
 
 
-def saveGraphPerEpoch(graph, trainData, epoch, saving_path,  trainLabel, testData, testLabel, data=None, bestCalinski=0, bestSilhouette= -2, max_nodes=2):
-
+def saveGraphPerEpoch(graph, trainData, epoch, saving_path,  trainLabel, testData, testLabel, data=None, count = 1, bestCalinski=0, bestSilhouette= -2, max_nodes=2):
+    
     # print("Calinski: ", bestCalinski)
     # print("numero de neuronas: ", len(graph.nodes))
     color_dict, n_clusters = determineClusters(graph)
@@ -397,27 +423,53 @@ def saveGraphPerEpoch(graph, trainData, epoch, saving_path,  trainLabel, testDat
             # print("test Y: ", testLabel.shape)
             # print(" labelsPred: ", len(labelsPred))
         
-            homogeneity, completeness, v_measure, ari, dbs, normalizedmutualInfo, fowlkes, calinski, purity, sil= evaluateClusteringQuality(testData, testLabel, labelsPred)
-            # print("silhouette: ", sil)
-            if (calinski >= bestCalinski or sil >= bestSilhouette) and len(graph.nodes) > max_nodes*0.1:
-                # Proceso de guardado de figura en cada epoch
-                if calinski < bestCalinski:
-                    calinski = bestCalinski
-                if sil < bestSilhouette:
-                    sil = bestSilhouette
+            dbs, calinski, sil= evaluateUnsupervisedClusteringQuality(testData, testLabel, labelsPred)
+            
+            # Proceso de guardado de figura en cada epoch
+            
+            if not path.isdir(saving_path):
+                makedirs(saving_path)
+            
+            if calinski >= bestCalinski and len(graph.nodes) > max_nodes*0.1:
+            
+                print("cal: ", calinski, "bestCalinski: ", bestCalinski)
                     
                 fig3d, fig, ax1, ax2 = createFigures("EpochsTest", "Unescaled", "numberOfEpoch:{}-Calinski:{}-silhouette:{}".format(epoch, calinski, sil), trainData.shape[1], numOfAx=2)
                 
                 showdata(data, trainLabel, ax1, fig3d, data.columns.tolist(), "epochsTest")
                 showResult(graph, color_dict, ax2, fig3d, data.columns.tolist(), dictcolor_label)
+                ax2.set_title('GNG_NEUPY_PACKAGE - BestCalinski')
         
-                saving_path = saving_path
-                # print("calinski: ", calinski, "silhouette: ", sil)
-                saveFigures(fig3d, fig, saving_path, epoch = epoch, calinski=calinski, silhouette=sil)
-                return calinski, sil
+                print("saving_path: ", saving_path)
+                saving_path_Calinski = "{}Config{}-CalinskiBestConfig".format(saving_path, count)
+                print("saving_path figura: ", saving_path_Calinski)
+                
+                # AÑADIR FICHERO CON HISTORIAL?
+                
+                saveBestConfig(fig3d, fig, saving_path_Calinski)
+                
+                bestCalinski = calinski
+
             
+            if sil >= bestSilhouette and len(graph.nodes) > max_nodes*0.1:
+                
+                print("sil: ", sil, "bestSil: ", bestSilhouette)
+    
+                fig3d, fig, ax1, ax2 = createFigures("EpochsTest", "Unescaled", "numberOfEpoch:{}-Calinski:{}-silhouette:{}".format(epoch, calinski, sil), trainData.shape[1], numOfAx=2)
+                
+                showdata(data, trainLabel, ax1, fig3d, data.columns.tolist(), "epochsTest")
+                showResult(graph, color_dict, ax2, fig3d, data.columns.tolist(), dictcolor_label)
+                ax2.set_title('GNG_NEUPY_PACKAGE - BestSilhoutte')
             
- 
+                # AÑADIR FICHERO CON HISTORIAL?
+                print("saving_path: ", saving_path)
+                saving_path_silhoutte = "{}Config{}-SilhoutteBestConfig".format(saving_path, count)
+                print("saving_path figura: ", saving_path_silhoutte)
+                
+                saveBestConfig(fig3d, fig, saving_path_silhoutte)
+                
+                bestSilhouette = sil
+            
 
     return bestCalinski, bestSilhouette
 

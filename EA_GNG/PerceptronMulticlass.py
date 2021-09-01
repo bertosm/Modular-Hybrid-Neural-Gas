@@ -8,7 +8,7 @@ Created on Mon Aug 23 19:19:05 2021
 import numpy as np
 from os import path, makedirs
 import sys
-from EA_GNG.core.method.metrics import prettyConfusionMatrix, calculateClassificationMetrics, saveMetricsPerceptron, rocCurve
+from EA_GNG.core.method.metrics import prettyConfusionMatrix, calculateClassificationMetrics, saveMetricsPerceptron
 from EA_GNG.core.figure import maketitle
 
 
@@ -97,7 +97,7 @@ class perceptron():
 # =============================================================================
                 labelsPredicted = self.predict(validationDataX.to_numpy())
                 metrics = dict()
-                metrics['accuracy'], metrics['precision'], metrics['recall'], metrics['f1Score'] = calculateClassificationMetrics(validationLabelY, labelsPredicted, verbose=False)
+                metrics['accuracy'], _, _, _, _, _  = calculateClassificationMetrics(validationLabelY, labelsPredicted, verbose=False)
                 
                 acc = metrics["accuracy"]
           
@@ -121,9 +121,8 @@ class perceptron():
         # saveFigureLabelsPred(validationDataX, validationLabelY, labelsPredicted, saving_path, self.count, sTitle=maketitle(self.param_dict, "perceptron"))
         
         metrics = dict()
-        metrics['accuracy'], metrics['precision'], metrics['recall'], metrics['f1Score'] = calculateClassificationMetrics(validationLabelY, labelsPredicted, verbose=False)                
-        metrics["auc"], metrics["falsos_positivos"], metrics["verdaderos_positivos"] = rocCurve(validationLabelY, labelsPredicted)
-            
+        metrics['accuracy'], metrics['precision'], metrics['recall'], metrics['f1Score'], metrics["falsos_positivos"], metrics["verdaderos_positivos"]  = calculateClassificationMetrics(validationLabelY, labelsPredicted, verbose=False)                
+        metrics['auc']=0.5
         dfCM = prettyConfusionMatrix(validationLabelY, labelsPredicted, verbose = False)
         confusion_matrixSavePath = '{}config{}-limit{}-Final-confusion_matrix.csv'.format(saving_path, self.count, self.limit)
         dfCM.to_csv(confusion_matrixSavePath)

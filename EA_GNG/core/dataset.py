@@ -10,6 +10,10 @@ from os import getcwd, scandir, makedirs, path
 import pandas as pd
 import numpy as np
 
+
+from joblib import load
+from os.path import join
+
 from sklearn.datasets import make_blobs
 from sklearn.decomposition import PCA
 from sklearn.model_selection import train_test_split
@@ -132,21 +136,22 @@ def escalarValues(df, metodo, target = 'DX_bl'):
 
 def createPCA(data, target = 'DX_bl', n_components = 3, verbose = False):
     #realizar PCA para cada dataset pasado anteriormente por el escalar
-    DXbl = data[target]
-    data2 = data.drop(target, axis=1)
+    label = data[target]
+    dataWithoutLabel = data.drop(target, axis=1)
     pca = PCA(n_components=n_components)
-    principalComponents = pca.fit_transform(data2)  
+    principalComponents = pca.fit_transform(dataWithoutLabel)  
     if verbose:
         print(data.columns)
         print("components: ", pca.components_)
         print("variance ratio: ", pca.explained_variance_ratio_)
     
     if n_components >= 3:
+        # columnas = ['Principal component 1', 'Principal component 2','Principal component 3', 'Principal component 4', 'Principal component 5']
         columnas = ['Principal component 1', 'Principal component 2','Principal component 3']
     elif n_components == 2:
         columnas = ['Principal component 1', 'Principal component 2']
     dfPrincipal = pd.DataFrame(data = principalComponents, columns = columnas)
-    dfPrincipal[target] = DXbl
+    dfPrincipal[target] = label
     return dfPrincipal
 
 
@@ -282,7 +287,6 @@ def removeNan(df):
 
 
 
-
 def takeTypeDataScaling(dataset):
     typeDataScaling = dataset.split(":>")[0]
     if len(dataset) == len(typeDataScaling):
@@ -291,3 +295,16 @@ def takeTypeDataScaling(dataset):
         typeDataScaling = None
     return typeDataScaling
 
+
+def loadDataset_CN_MCI_AD_fromPKL(path, pklFileName, num_components, scaled, projection):
+    
+    s= join(path, pklFileName)
+    a = load(s)
+    
+    data_train =  a[0]['partitioned_class_balanced_projected_scaled_data_dict']['train_test_split {}___num_components={} {}'.format(scaled, num_components, projection)]['data_train']
+    data_test = a[0]['partitioned_class_balanced_projected_scaled_data_dict']['train_test_split {}___num_components={} {}'.format(scaled, num_components, projection)]['data_test']
+    labels_train = a[0]['partitioned_class_balanced_projected_scaled_data_dict']['train_test_split {}___num_components={} {}'.format(scaled, num_components, projection)]['labels_train']
+    labels_test = a[0]['partitioned_class_balanced_projected_scaled_data_dict']['train_test_split {}___num_components={} {}'.format(scaled, num_components, projection)]['labels_test']
+    
+    return data_train, data_test, labels_train, labels_test
+    

@@ -372,16 +372,27 @@ def saveFigures(fig3d, fig, saving_path, param_dict = None, epoch = None, calins
         # savename = '{}configEpoch{}-Calinski{}-silhouette{}.png'.format(saving_path, epoch, int(calinski), str(silhouette))
         
         fileName = '{}bestConfigSilhouette.html'.format(saving_path)
-        savename = '{}bestConfigSilhouette.png'.format(saving_path)
+        saveName = '{}bestConfigSilhouette.png'.format(saving_path)
     else:
         fileName = '{}config{}-3Dplot-{}.html'.format(saving_path, param_dict['count'], param_dict['typeDataScaling'])
-        savename = saving_path + 'config{}-{}.png'.format(param_dict['count'], param_dict['typeDataScaling'])
+        saveName = saving_path + 'config{}-{}.png'.format(param_dict['count'], param_dict['typeDataScaling'])
 
     if fig3d != None:
-        plot(fig3d, filename = fileName, auto_open=False)
-        
-    plt.savefig(savename,bbox_inches = 'tight')
+        plot(fig3d, output_type = "file", filename = fileName, auto_open=False)
+    
+    plt.savefig(saveName,bbox_inches = 'tight')
     plt.close(fig)
+    
+   
+    
+def saveBestConfig(fig3d, fig, saving_path):
+    
+    if fig3d != None:
+        plot(fig3d, output_type = "file", filename = saving_path + ".html", auto_open=False)
+        
+    plt.savefig(saving_path + ".png",bbox_inches = 'tight')
+    plt.close(fig)
+    
     
 def saveFigureLabelsPred(testDataX, labelsTrue, labelsPred, saving_path, count = 1, sTitle="data predicted"):
     fig3d, fig, ax1, ax2 = createFigures("predicted", "", sTitle, 2, 1)
