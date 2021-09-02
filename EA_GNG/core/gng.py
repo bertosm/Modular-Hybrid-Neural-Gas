@@ -27,6 +27,9 @@ from EA_GNG.GNGperceptron import GNG_perceptron
 
 from neupy import utils
 from neupy.algorithms.competitive.growing_neural_gas import GrowingNeuralGas, NeuronNode, NeuralGasGraph, sample_data_point,StopTraining
+from neupy.algorithms.base import BaseSkeleton
+from neupy.utils import iters
+
 
 from EA_GNG.core.method.metrics import evaluateUnsupervisedClusteringQuality
 from EA_GNG.core.method.statistics import round_decimals_down
@@ -114,48 +117,48 @@ def neupy_growingneuralgas(trainDataX, param_dict, ax, fig, trainLabelsY = None,
 
 def loop_gng(config, saving_path, df, PCA=False, PCA_n_components = 3, hibrid=False, typeDataScaling=None, labelsOrdering = None, nameDataset = 'NoNamedDataset', seed = 1, shuffle_data = True, verbose = False, savedGNG=False, saveProcess=False):
   
-    
-    # Pre processing del conjunto de datos (PCA y seleccion de características si es necesario)
-    target = df.columns.tolist()[-1]
-    
-    print("Initial dataset: ", df)
-    
-    # df = df[["MMSCORE", "FAQSHOP", "ADAS_Q7", "DX_bl"]]
-    # print("Dataset selected features")
-    
-    # normalizing Inputs v1
-    # media = np.mean(df.iloc[:, :-1])
-    # desviacion = np.std(df.iloc[:, :-1])
-    # df.iloc[:, :-1] = (df.iloc[:, :-1] - media) / desviacion
-    # print("Dataset normalized: ",df)  
-    
-    
-    if PCA and len(df.columns.tolist()) > 3:
-        df = createPCA(df, target, n_components = PCA_n_components, verbose = True)
-        print("PCA ", df)
+    if isinstance(df, dict):
         
-
-        # normalizing Inputs!
+        target = ""
+        listFeatures = df["num_components"]
+    
+    else:
+        # Pre processing del conjunto de datos (PCA y seleccion de características si es necesario)
+        target = df.columns.tolist()[-1]
+        listFeatures = df.columns.tolist()
+        
+        print("Initial dataset: ", df)
+        
+        # df = df[["MMSCORE", "FAQSHOP", "ADAS_Q7", "DX_bl"]]
+        # print("Dataset selected features")
+        
+        # normalizing Inputs v1
         # media = np.mean(df.iloc[:, :-1])
         # desviacion = np.std(df.iloc[:, :-1])
         # df.iloc[:, :-1] = (df.iloc[:, :-1] - media) / desviacion
-        # print("PCA normalized", df)
+        # print("Dataset normalized: ",df)  
         
+        
+        if PCA and len(df.columns.tolist()) > 3:
+            df = createPCA(df, target, n_components = PCA_n_components, verbose = True)
+            print("PCA ", df)
+            
 
-    if not path.isdir("C:/Users/Bertosm/Desktop/dataset/"):
-        makedirs("C:/Users/Bertosm/Desktop/dataset/")
-        
-        
+            # normalizing Inputs!
+            # media = np.mean(df.iloc[:, :-1])
+            # desviacion = np.std(df.iloc[:, :-1])
+            # df.iloc[:, :-1] = (df.iloc[:, :-1] - media) / desviacion
+            # print("PCA normalized", df)
+  
     # # Se imprime excel con los overlapping que existen en el cuerpo de entrada. 
+
+    # if not path.isdir("C:/Users/Bertosm/Desktop/dataset/"):
+    #     makedirs("C:/Users/Bertosm/Desktop/dataset/")
     # overlapping = df.groupby(df.columns.tolist(), as_index = False).size()
     # writer = pd.ExcelWriter( 'C:/Users/Bertosm/Desktop/dataset/overlappingPCA-3Comp.xlsx')
     # overlapping.to_excel(writer,'Hoja1',index=False)
     # writer.save()
 
-
-    listFeatures = df.columns.tolist()
-    
-    
     # creamos un diccionario con los parámetros pasados de la configuracion
     param_dict_gng = {'n_start_nodes': config[4],
                   'winner_step': config[9], #0.2
@@ -236,7 +239,7 @@ class neupy_NeuralGasGraph(NeuralGasGraph):
         self.edges_per_node[node_2].pop(node_1)
 
         del self.edges[edge_id]
-
+    
         
 class neupy_gng(GrowingNeuralGas):
     
@@ -495,3 +498,4 @@ def apply_slices(inputs, indices):
         return [apply_slices(input_, indices) for input_ in inputs]
 
     return inputs[indices]
+

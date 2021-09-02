@@ -16,7 +16,8 @@ import itertools
 import sys
 from joblib import Parallel, delayed
 
-from EA_GNG.core.dataset import removeNan, imputerData, loadOneDataset, ls, saveDatasets, modifyLabels, escalarValues, makeDatasetDict, takeTypeDataScaling, splitDataset
+
+from EA_GNG.core.dataset import removeNan, imputerData, loadOneDataset, ls, saveDatasets, modifyLabels, escalarValues, makeDatasetDict, takeTypeDataScaling, splitDataset, loadDataset_partitionared_CN_MCI_AD_fromPKL
 from EA_GNG.core.figure import createFigures, saveFigures, maketitle, checkColorListAndColorRange, showdata
 from EA_GNG.core import gng
 
@@ -299,10 +300,15 @@ def growingNeuralGas(param_dict, df, saving_path, target = "DX_bl", labelsOrderi
     if not path.isdir(saving_path):
         makedirs(saving_path, exist_ok = True)
     
-    trainDataX, trainLabelsTrueY, testDataX, testLabelsTrueY = splitDataset(df, 0.20, target, param_dict['seed'])
+    if isinstance(df, dict):
+        trainDataX, trainLabelsTrueY, testDataX, testLabelsTrueY = loadDataset_partitionared_CN_MCI_AD_fromPKL(df["filePath"], df["fileName"], df["num_components"], df["scaled"], df["projection"])
+    else:
+        trainDataX, trainLabelsTrueY, testDataX, testLabelsTrueY = splitDataset(df, 0.20, target, param_dict['seed'])
     
-    # print("size training data: ", trainDataX.shape[0])
-    # print("size testing data: ", testDataX.shape[0])
+    print("size training data: ", trainDataX.shape[0])
+    print("size testing data: ", testDataX.shape[0])
+    print("size training data: ", trainLabelsTrueY.shape[0])
+    print("size testing data: ", testLabelsTrueY.shape[0])
     param_dict['n_features'] = trainDataX.shape[1]
 
     if not saveProcess:
@@ -376,6 +382,9 @@ def growingNeuralGas(param_dict, df, saving_path, target = "DX_bl", labelsOrderi
 # -------------------------- LOOP GROWING NEURAL GAS ----------------------------------------------        
 def loopGrowingNeuralGas_perceptron(loopDict, saving_path, loadedDatasets = None, PCA=False, PCA_n_components = 3, list_distance = (3.0, ), list_number_samples = (333, ), labelsOrdering = None, verbose = False, shuffle_data = True, seed = 1, saveProcess = False, savedGNG=False, hibrid=True):
     
+    print("datasets: ", loadedDatasets.keys())
+    if "pkl" in loadedDatasets.keys():
+        print(loadedDatasets["pkl"])
     print("ejecutando con las siguientes condiciones:\n", "savingPath:> {}\nPCA:> {} -//- NºPCA:> {}\nhibrid:> {} -//- savedGNG:> {} -//- saveProcess:> {}".format(saving_path, PCA, PCA_n_components, hibrid, savedGNG, saveProcess))
     print("are you sure?")
     print("The path already exist? ", path.isdir(saving_path))
@@ -398,7 +407,7 @@ def loopGrowingNeuralGas_perceptron(loopDict, saving_path, loadedDatasets = None
         aux['dataset'] = loadedDatasets
         loadedDatasets = aux
         
-
+        
     #Si el ´número de configuraciones es 8 o más se ejecutarán paralelamenta las configuraciones (8 por el número de procesadores).
     #Si no se ejecutará paralelamente el diccionario con más objetos.
     if len(loopDict) >=8 or len(loopDict) >= len(loadedDatasets):

@@ -9,7 +9,7 @@ import pandas as pd
 import math
 
 from scipy import stats
-from statsmodels.stats.anova import AnovaRM
+# from statsmodels.stats.anova import AnovaRM
 
 
 def nonParametric2classes(x, y, alpha = 0.05):
