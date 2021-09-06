@@ -306,10 +306,19 @@ def loadDataset_CN_MCI_AD_fromPKL(path, pklFileName, num_components, scaled, pro
     s= join(path, pklFileName)
     a = load(s)
     
-    data_train =  a[0]['partitioned_class_balanced_projected_scaled_data_dict']['train_test_split {}___num_components={} {}'.format(scaled, num_components, projection)]['data_train']
-    data_test = a[0]['partitioned_class_balanced_projected_scaled_data_dict']['train_test_split {}___num_components={} {}'.format(scaled, num_components, projection)]['data_test']
-    labels_train = a[0]['partitioned_class_balanced_projected_scaled_data_dict']['train_test_split {}___num_components={} {}'.format(scaled, num_components, projection)]['labels_train']
-    labels_test = a[0]['partitioned_class_balanced_projected_scaled_data_dict']['train_test_split {}___num_components={} {}'.format(scaled, num_components, projection)]['labels_test']
+    data =  a[0]['class_balanced_projected_scaled_data_dict']['{}___num_components={}'.format(scaled, num_components)][projection]
     
-    return data_train, data_test, labels_train, labels_test
+    return data
+    
+def loadDataset_partitionared_CN_MCI_AD_fromPKL(path, pklFileName, num_components, scaled, projection):
+    
+    s= join(path, pklFileName)
+    a = load(s)
+    
+    data_train =  pd.DataFrame(a[0]['partitioned_class_balanced_projected_scaled_data_dict']['train_test_split {}___num_components={} {}'.format(scaled, num_components, projection)]['data_train'])
+    data_test = pd.DataFrame(a[0]['partitioned_class_balanced_projected_scaled_data_dict']['train_test_split {}___num_components={} {}'.format(scaled, num_components, projection)]['data_test'])
+    labels_train = pd.Series(a[0]['partitioned_class_balanced_projected_scaled_data_dict']['train_test_split {}___num_components={} {}'.format(scaled, num_components, projection)]['labels_train'])
+    labels_test = pd.Series(a[0]['partitioned_class_balanced_projected_scaled_data_dict']['train_test_split {}___num_components={} {}'.format(scaled, num_components, projection)]['labels_test'])
+    
+    return data_train, labels_train, data_test, labels_test
     

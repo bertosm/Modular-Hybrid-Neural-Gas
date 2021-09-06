@@ -10,16 +10,21 @@ Created on Mon Apr 12 12:41:29 2021
 import EA_GNG.EA_GNG
 import warnings
 
-from EA_GNG.print import plotRocCurve_fromPath
+# from EA_GNG.print import plotRocCurve_fromPath
 
 from EA_GNG.core.dataset import loadDataset_CN_MCI_AD_fromPKL
 
 warnings.filterwarnings("ignore")
 
-filesPath = "C:/Users/Bertosm/Desktop/GNG-Alzheimer-Comciencia/Datasets/MCI-AD/"
-# filesPath = "C:/Users/Bertosm/Desktop/Datasets/"
-loadedDataset = EA_GNG.EA_GNG.loadDatasets(filesPath, concretFile='baseline_MCI-AD_ADNI2.xlsx')
-
+# filesPath = "C:/Users/Bertosm/Desktop/GNG-Alzheimer-Comciencia/Datasets/MCI-AD/"
+# # filesPath = "C:/Users/Bertosm/Desktop/Datasets/"
+loadedDataset =  dict()
+loadedDataset["pkl"] = {"filePath":"C:/Users/alber/Desktop/GNG/Datasets/CN-MCI-AD/",
+                        "fileName":"CN-MCI-AD-ADNI1-prepared_data-20210901_17h20m.pkl",
+                        "num_components":4,
+                        "scaled":"RobustScaler",
+                        "projection":"FactorAnalysis"
+                        }
 # list_epoch = (500, )
 # list_max_age= (14, 16, 18, 20, 22, 24, 26, 28, 30)
 # list_lambda = (158, 315, 625, 800, 948, 1250)
@@ -56,7 +61,7 @@ list_neighborsActivation = (5, ) #set 0 to use all the distances, 1 for only 1 n
 
 list_learningRate = (0.2, )
 
-list_epochPerceptron = (20,)
+list_epochPerceptron = (20, )
 
 dictConfig = EA_GNG.EA_GNG.makeConfigDict(list_epoch, list_max_age, list_lambda, list_max_nodes, 
                                           list_step = list_step, list_neighbour_step=list_neighbour_step,
@@ -64,7 +69,7 @@ dictConfig = EA_GNG.EA_GNG.makeConfigDict(list_epoch, list_max_age, list_lambda,
                                           list_neighborsActivation=list_neighborsActivation)
 
 
-savingPathGNG= "C:/Users/Bertosm/Desktop/testGNG/"
+savingPathGNG= "C:/Users/alber/Desktop/testGNG/"
 
 savingPathGNG= "C:/Users/Bertosm/Desktop/test-limit0.2199-checkRepeatvalues-2PCA-MyGNG-withPerceptronBackPropagation-weights0to1/"
 # savingPathGNG= "C:/Users/Bertosm/Desktop/3PCA-MyGNG-withPerceptronBasic-weights0to1/"

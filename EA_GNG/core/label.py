@@ -68,7 +68,7 @@ def labelClustersResult(trainData, trainLabels, gng_graph, color_dict, testData 
 def labelingClusters(data, trainLabels, gng_graph, color_dict, num_neighbor = 5):
     
     colorPredicted = dict()
-   
+
     # Se recorre cada dato de entrada para observar a que clúster pertenece según los 5 más cercanos.
     for i, vector in data.iterrows():
         
