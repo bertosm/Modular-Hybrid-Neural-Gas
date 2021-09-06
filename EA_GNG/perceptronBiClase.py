@@ -40,6 +40,8 @@ class perceptron():
         self.limit = limit
         self.gng_neupy = gng_neupy
         self.param_dict = param_dict
+        print("lr:{}-epochs:{}-limit:{}".format(self.learningRate,self.epochs, self.limit))
+       
         
         np.random.seed(self.seed)
     
@@ -163,7 +165,14 @@ class perceptron():
         
     def _net_input(self, data):
         net = np.dot(self.activate_gngVector(data), self.weights[1:]) + self.weights[0]
-        # print("net: ", net)
+        # net = np.dot(self.activate_gngVector(data), self.weights[1:]) 
+        # if all(x < 1 for x in net) :    
+        #     pass
+        # else:
+        #     print("data: ", data)
+        #     print("weights: ", self.weights)
+        #     print("net: ", net) 
+        #     print("net: ", type(net)) 
         return net
 
         

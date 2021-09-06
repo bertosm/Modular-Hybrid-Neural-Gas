@@ -27,10 +27,11 @@ loadedDataset = EA_GNG.EA_GNG.loadDatasets(filesPath, concretFile='baseline_MCI-
 # list_step = (0.2, 0.1)
 # list_neighbour_step = (0.05, 0.006, 0.0006)
 
-datasetpath = "C:/Users/Bertosm/Desktop/GNG-Alzheimer-Comciencia/Datasets/CN-MCI-AD/"
-datasetFile = 'CN-MCI-AD-ADNI1-prepared_data-20210901_17h20m.pkl'
-X_train, X_test, Y_train, Y_test = loadDataset_CN_MCI_AD_fromPKL(datasetpath, datasetFile, num_components=4, scaled = "RobustScaler", projection="FactorAnalysis")
-raise
+# datasetpath = "C:/Users/Bertosm/Desktop/GNG-Alzheimer-Comciencia/Datasets/CN-MCI-AD/"
+# datasetFile = 'CN-MCI-AD-ADNI1-prepared_data-20210901_17h20m.pkl'
+# X_train, X_test, Y_train, Y_test = loadDataset_CN_MCI_AD_fromPKL(datasetpath, datasetFile, num_components=4, scaled = "RobustScaler", projection="FactorAnalysis")
+
+
 list_epoch = (20, )
 list_max_age= (6, )
 list_lambda = (625,)
@@ -40,7 +41,7 @@ list_neighbour_step = (0.05, )
 
 # """Parámetros perceptrón
 
-list_neighborsActivation = (0,) #set 0 to use all the distances, 1 for only 1 neuron and other numbers for X nearest neurons
+list_neighborsActivation = (5, ) #set 0 to use all the distances, 1 for only 1 neuron and other numbers for X nearest neurons
 
 # list_learningRate = (0.0,0.02,0.04,0.06,0.08,
 #                       0.1,0.12,0.14, 0.16,0.18,
@@ -65,10 +66,11 @@ dictConfig = EA_GNG.EA_GNG.makeConfigDict(list_epoch, list_max_age, list_lambda,
 
 savingPathGNG= "C:/Users/Bertosm/Desktop/testGNG/"
 
-# savingPathGNG= "C:/Users/Bertosm/Desktop/NOTPCA-onlyPerceptronBackpropagation-weight00to01/"
+savingPathGNG= "C:/Users/Bertosm/Desktop/test-limit0.2199-checkRepeatvalues-2PCA-MyGNG-withPerceptronBackPropagation-weights0to1/"
+# savingPathGNG= "C:/Users/Bertosm/Desktop/3PCA-MyGNG-withPerceptronBasic-weights0to1/"
 # savingPathGNG= "C:/Users/alber/Desktop/Articulo/Articulo-Portatil/Pruebas/pruebaPorcentajeClusters/"
 # savingPathGNG= "C:/Users/alber/Desktop/3ComponentesPCA-Articulo/Pruebas/ProbandoCodigo/"
 
-EA_GNG.EA_GNG.loopGrowingNeuralGas_perceptron(dictConfig, savingPathGNG, loadedDatasets = loadedDataset,  PCA=True, PCA_n_components = 3, savedGNG=False, saveProcess=True, hibrid =False)
+EA_GNG.EA_GNG.loopGrowingNeuralGas_perceptron(dictConfig, savingPathGNG, loadedDatasets = loadedDataset,  PCA=True, PCA_n_components = 2, savedGNG=True, saveProcess=False, hibrid =True)
 
 

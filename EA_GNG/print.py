@@ -9,7 +9,8 @@ Created on Tue Apr 20 13:29:24 2021
 import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.metrics import auc
-from EA_GNG.core.dataset import ls
+# from EA_GNG.core.dataset import ls
+from core.dataset import ls
 
 PlotOptions = {"AN0": {"marker":".", "linestyle":(0, (3, 1, 1, 1, 1, 1))},
                "AN1":  {"marker":".", "linestyle":"dotted"},
@@ -38,19 +39,31 @@ def plotRocCurve_fromPath(path):
         elif "final-RocCurve" not in filePath:
             continue
     
-        AN = filePath.split("-")[0]
+        splitNameFile = filePath.split("-")
+        if len(splitNameFile) > 3:
+            moreInfoLabel = splitNameFile[3].split(".")[0]
+        else:
+            moreInfoLabel = ""
+            
+        AN = splitNameFile[0]
+        
         print(AN)
         fileAuc.write(filePath+";")
-        plotRocCurve(path + filePath, AN)
+        plotRocCurve(path + filePath, AN, fileAuc, moreInfoLabel)
         
     plotRocCurveConfiguration(path)
     fileAuc.close()
     
     
-def plotRocCurve(filePath, AN = "ANNOT", fileAuc = None):
+def plotRocCurve(filePath, AN = "ANNOT", fileAuc = None, moreInfoLabel=""):
     
-    dfRoc = pd.read_csv(filePath, sep=";")
-
+    if "Basic" in filePath:
+        dfRoc = pd.read_csv(filePath, sep=",")
+    elif "BackPropagation" in filePath:
+        dfRoc = pd.read_csv(filePath, sep=";")
+        
+    print(dfRoc)
+    
     sensibilidad =dfRoc["falsosPositivos"]    
     
     sensibilidad.loc[-1] = 0
@@ -77,7 +90,8 @@ def plotRocCurve(filePath, AN = "ANNOT", fileAuc = None):
     print("AUC of " + AN, aucValue)
     
     if fileAuc != None:
-        fileAuc.write(aucValue+"\n")
+        fileAuc.write("{}\n".format(aucValue))
+        
     plt.plot(sensibilidad, unoMenosEspecificidad, marker=PlotOptions[AN]['marker'],
           label ="{}-Auc{}".format(AN, round(aucValue,2)), linestyle=PlotOptions[AN]['linestyle'])
     
@@ -102,7 +116,9 @@ def plotRocCurveConfiguration(saving_path):
     plt.close()
 
 
-# plotRocCurve_fromPath("C:/Users/Bertosm/Desktop/2PCA-onlyPerceptronBackPropagation-weight0to1/lr0.2-epch20")
+
+print("Plotting Roc Curve from Path!")
+plotRocCurve_fromPath("C:/Users/Bertosm/Desktop/3PCA-MyGNG-withPerceptronBasic-weights0to1/lr0.2-epch20/")
 
 """ versión anterior:
 
@@ -115,7 +131,7 @@ def plotRocCurveConfiguration(saving_path):
 
 # filepath3 = "/Users/pedrososa/Desktop/ArticuloEscrito/VersionesAnteriores/Articulo4_0/curveRocAct3.xlsx"
 # dfRoc3 = pd.read_excel(filepath3)
-# sensibilidad3 = dfRoc3["a"]
+# sensibilidad3 = dfRoc3["a"].5
 # unoMenosEspecificidad3 = dfRoc3["b"]
 # auc3 = auc(sensibilidad3, unoMenosEspecificidad3)
 # print("AUC3: ", auc3)

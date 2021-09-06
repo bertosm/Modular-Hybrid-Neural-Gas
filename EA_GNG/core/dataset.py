@@ -75,6 +75,11 @@ def ls(path = getcwd()):
     return [arch.name for arch in scandir(path) if arch.is_file()]
 
 
+def ls_dirs(path = getcwd()):
+    #metodo para obtener los nombres de todos los ficheros que se encuentran en la carpeta
+    return [arch.name for arch in scandir(path) if arch.is_dir()]
+
+
 
 def make_dataset(param_dict):
 

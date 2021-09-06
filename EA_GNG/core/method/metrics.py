@@ -44,12 +44,12 @@ def calculateClassificationMetrics(labelsTrue, labelsPred, labelsOrdering = None
     
     falsos_positivos,verdaderos_positivos,_ = roc_curve(labelsTrue, labelsPred)
     if len(falsos_positivos) == 2:
-        falsos_positivos = 0
+        falsos_positivos = -1
     else:
         falsos_positivos = falsos_positivos[1]
     
     if len(verdaderos_positivos) == 2:
-        verdaderos_positivos = 0
+        verdaderos_positivos = -1
     else:
         verdaderos_positivos = verdaderos_positivos[1]
         
@@ -146,23 +146,24 @@ def evaluateSupervisedClusteringQuality(data, labelsTrue, labelsPred, seed = 1, 
     return homogeneity, completeness, v_measure, ari, normalizedmutualInfo, fowlkes, purity
   
 
-def saveClassificationMetrics(saving_path, metrics, count = 1):
+# REVISAR si sirve la función! BASICAMENTE ES LA FUNCION ACTUAL: saveMetricsPerceptron
+# def saveClassificationMetrics(saving_path, metrics, count = 1):
     
-    if count == '1':
-        # Open file to save the metrics for first time. It is reset if the file already exists.
-        file_Classification_metrics = open("{}config_param_clusteringQualitySupervisedMetrics.txt".format(saving_path), "w") #Open/writting over file, unsupervised metrics obtained
-        file_Classification_metrics.write("config;params;accuracy;precision;recall;f1Score;sensitivity;specificity\n")
-    else:
-        # Open file that already exists or create it.
-        file_Classification_metrics = open("{}config_param_clusteringQualitySupervisedMetrics.txt".format(saving_path), "a") #Open/Writting continue file, unsupervised metrics obtained
+#     if count == '1':
+#         # Open file to save the metrics for first time. It is reset if the file already exists.
+#         file_Classification_metrics = open("{}config_param_clusteringQualitySupervisedMetrics.txt".format(saving_path), "w") #Open/writting over file, unsupervised metrics obtained
+#         file_Classification_metrics.write("config;params;accuracy;precision;recall;f1Score;sensitivity;specificity\n")
+#     else:
+#         # Open file that already exists or create it.
+#         file_Classification_metrics = open("{}config_param_clusteringQualitySupervisedMetrics.txt".format(saving_path), "a") #Open/Writting continue file, unsupervised metrics obtained
 
-    sTitle= "" # Pasar configuración Por Parámetro!
-    # Save parameters and metrics results
+#     sTitle= "" # Pasar configuración Por Parámetro!
+#     # Save parameters and metrics results
 
-    file_Classification_metrics.write("config {};{};accuracy:{};precision:{};recall:{};f1Score:{};sensitivity:{};specificity:{}\n".format(count, sTitle.replace('\n',' '),
-                                                                                                             metrics['accuracy'], metrics['precision'], metrics['recall'], metrics['f1Score'], metrics['l'], metrics["k"]))
+#     file_Classification_metrics.write("config {};{};accuracy:{};precision:{};recall:{};f1Score:{};sensitivity:{};specificity:{}\n".format(count, sTitle.replace('\n',' '),
+#                                                                                                              metrics['accuracy'], metrics['precision'], metrics['recall'], metrics['f1Score'], metrics['l'], metrics["k"]))
    
-    file_Classification_metrics.close()
+#     file_Classification_metrics.close()
     
      
      
@@ -203,64 +204,12 @@ def saveUnsupervisedClusteringMetrics(saving_path, count = 1, calinski = -1, sil
                                                                                                     calinski, silhouette, dbs))
     file_unsupervised_clusteringQuality_metrics.close()
     
-def saveMetrics(count, saving_path, metrics, sTitle=None, timeNeupyGNG=None, n_clusters=None, limit = None, bestAcc=-1):
-    
-    if timeNeupyGNG == None:
-       saveMetricsPerceptron(count, saving_path, metrics,sTitle, limit, bestAcc)
-       return
-    
-     #iniciar el guardado de las figuras, metricas, clusters encontrados, etc.
-    if len(count) == 1 and count[0] == '1':
-        # Creando ficheros resultantes, si existen previamente son reescritos.
-        t = open("{}config_param_time.txt".format(saving_path), "w") #fichero tiempo de ejecución
-        c = open("{}config_param_cluster.txt".format(saving_path), "w") #fichero cluste, número de cluster encontrados
-        mrn = open("{}config_param_metricsReportNeupy.txt".format(saving_path), "w") #fichero metrica resultante
-        cqrn = open("{}config_param_clusteringQualityReportNeupy.txt".format(saving_path), "w") #fichero quality resultante
-         # Encabezados de los ficheros resultantes.
-        t.write('config;params;timeGNG\n')
-        c.write('config;params;clusters_neupy\n')
-        mrn.write('config;params;accuracy;precision;recall;f1Score\n')
-        cqrn.write('config;params;homogeneity;completeness;v_measure;adjustedrand;daviesbouldin;normalizedmutualInfo;fowlkes;calinski;purity;silhouette;bestSilhouette;bestCalinski\n')
-        
-        
-       
-    else:
-        #Abriendo ficheros resultantes, previamente existentes, si no existen los crea.
-        t = open("{}config_param_time.txt".format(saving_path), "a")
-        c = open("{}config_param_cluster.txt".format(saving_path), "a")
-        mrn = open("{}config_param_metricsReportNeupy.txt".format(saving_path), "a")
-        cqrn = open("{}config_param_clusteringQualityReportNeupy.txt".format(saving_path), "a")
-    
-        
-    #guardar los parametros
-    t.write("config {};{}".format(count,sTitle.replace('\n',' ')))
-    c.write("config {};{}".format(count,sTitle.replace('\n',' ')))
-    mrn.write("config {};{}".format(count,sTitle.replace('\n',' ')))
-    cqrn.write("config {};{}".format(count,sTitle.replace('\n',' ')))
-    
-    #guardar los tiempo de ejecucion.
-    t.write(";tiempo GNG neupy:{}\n".format(timeNeupyGNG))
-
-    #guardar el número de cluster encontrados.
-    c.write(";clustersNeupy:{}\n".format(n_clusters))
-    
-    # guardar las métricas obtenidas.
-    mrn.write(";accuracy:{};precision:{};recall:{};f1Score:{}\n".format(metrics['accuracy'], metrics['precision'], metrics['recall'], metrics['f1Score']))
-    
-    #guardar las metricas de calidad obtenidas, quality.
-    cqrn.write(";homogeneity:{};completeness:{};v_measure:{};adjustedrand:{};daviesbouldin:{};normalizedmutualInfo:{};fowlkes:{};calinski:{};purity:{};silhouette:{};bestSilhouette:{};bestCalinski:{}\n".format(metrics['homogeneity'], metrics['completeness'], metrics['v_measure'], metrics['ari'], metrics['dbs'], metrics['normalizedmutualInfo'], metrics['fowlkes'], metrics['calinski'], metrics['purity'], metrics['sil'], metrics['bestSilhouette'], metrics['bestCalinski'] ))
-    
-    #cerrar la escritura en fichero
-    t.close()
-    c.close()
-    mrn.close()
-    cqrn.close()
     
 def saveMetricsPerceptron(count, saving_path, metrics, sTitle = None, limit = None, activationNeigbors=None, bestAcc= -1):
    
 
-    falsoPositivo =  metrics["falsos_positivos"] #Array [0, FalsoPositivo, 1]
-    verdaderoPositivo = metrics["verdaderos_positivos"]#Array [0, VerdaderoPositivo, 1]
+    falsoPositivo =  metrics["falsos_positivos"] 
+    verdaderoPositivo = metrics["verdaderos_positivos"]
     
     if limit==1 or limit ==0:
 
@@ -281,10 +230,65 @@ def saveMetricsPerceptron(count, saving_path, metrics, sTitle = None, limit = No
     mrn.write(";accuracy:{};bestAcc:{};precision:{};recall:{};f1Score:{};auc:{};falsosPositivos:{};falsosV:{}\n".format(metrics['accuracy'], bestAcc, metrics['precision'], metrics['recall'], metrics['f1Score'], metrics["auc"], metrics["falsos_positivos"],metrics["verdaderos_positivos"] ))
     mrn.close()
     
-    rocFile.write('{};{};{}\n'.format(limit,falsoPositivo, verdaderoPositivo))
+    if falsoPositivo != -1 and verdaderoPositivo != -1:
+        rocFile.write('{};{};{}\n'.format(limit,falsoPositivo, verdaderoPositivo))  
     rocFile.close()
     
     
    
        
+# def saveMetrics(count, saving_path, metrics, sTitle=None, timeNeupyGNG=None, n_clusters=None, limit = None, bestAcc=-1):
+    
+#     if timeNeupyGNG == None:
+#        saveMetricsPerceptron(count, saving_path, metrics,sTitle, limit, bestAcc)
+#        return
+    
+#      #iniciar el guardado de las figuras, metricas, clusters encontrados, etc.
+#     if len(count) == 1 and count[0] == '1':
+#         # Creando ficheros resultantes, si existen previamente son reescritos.
+#         t = open("{}config_param_time.txt".format(saving_path), "w") #fichero tiempo de ejecución
+#         c = open("{}config_param_cluster.txt".format(saving_path), "w") #fichero cluste, número de cluster encontrados
+#         mrn = open("{}config_param_metricsReportNeupy.txt".format(saving_path), "w") #fichero metrica resultante
+#         cqrn = open("{}config_param_clusteringQualityReportNeupy.txt".format(saving_path), "w") #fichero quality resultante
+#          # Encabezados de los ficheros resultantes.
+#         t.write('config;params;timeGNG\n')
+#         c.write('config;params;clusters_neupy\n')
+#         mrn.write('config;params;accuracy;precision;recall;f1Score\n')
+#         cqrn.write('config;params;homogeneity;completeness;v_measure;adjustedrand;daviesbouldin;normalizedmutualInfo;fowlkes;calinski;purity;silhouette;bestSilhouette;bestCalinski\n')
+        
+        
+       
+#     else:
+#         #Abriendo ficheros resultantes, previamente existentes, si no existen los crea.
+#         t = open("{}config_param_time.txt".format(saving_path), "a")
+#         c = open("{}config_param_cluster.txt".format(saving_path), "a")
+#         mrn = open("{}config_param_metricsReportNeupy.txt".format(saving_path), "a")
+#         cqrn = open("{}config_param_clusteringQualityReportNeupy.txt".format(saving_path), "a")
+    
+        
+#     #guardar los parametros
+#     t.write("config {};{}".format(count,sTitle.replace('\n',' ')))
+#     c.write("config {};{}".format(count,sTitle.replace('\n',' ')))
+#     mrn.write("config {};{}".format(count,sTitle.replace('\n',' ')))
+#     cqrn.write("config {};{}".format(count,sTitle.replace('\n',' ')))
+    
+#     #guardar los tiempo de ejecucion.
+#     t.write(";tiempo GNG neupy:{}\n".format(timeNeupyGNG))
+
+#     #guardar el número de cluster encontrados.
+#     c.write(";clustersNeupy:{}\n".format(n_clusters))
+    
+#     # guardar las métricas obtenidas.
+#     mrn.write(";accuracy:{};precision:{};recall:{};f1Score:{}\n".format(metrics['accuracy'], metrics['precision'], metrics['recall'], metrics['f1Score']))
+    
+#     #guardar las metricas de calidad obtenidas, quality.
+#     cqrn.write(";homogeneity:{};completeness:{};v_measure:{};adjustedrand:{};daviesbouldin:{};normalizedmutualInfo:{};fowlkes:{};calinski:{};purity:{};silhouette:{};bestSilhouette:{};bestCalinski:{}\n".format(metrics['homogeneity'], metrics['completeness'], metrics['v_measure'], metrics['ari'], metrics['dbs'], metrics['normalizedmutualInfo'], metrics['fowlkes'], metrics['calinski'], metrics['purity'], metrics['sil'], metrics['bestSilhouette'], metrics['bestCalinski'] ))
+    
+#     #cerrar la escritura en fichero
+#     t.close()
+#     c.close()
+#     mrn.close()
+#     cqrn.close()
+    
+
     

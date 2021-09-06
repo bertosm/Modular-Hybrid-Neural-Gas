@@ -141,6 +141,13 @@ def loop_gng(config, saving_path, df, PCA=False, PCA_n_components = 3, hibrid=Fa
         # df.iloc[:, :-1] = (df.iloc[:, :-1] - media) / desviacion
         # print("PCA normalized", df)
         
+        # df.iloc[:, :-1] = df.iloc[:, :-1]/ np.linalg.norm(df.iloc[:, :-1])
+        # print("PCA normalized", df)
+        # print(max(df['Principal component 1']))
+        # print(min(df['Principal component 1']))
+        # print(max(df['Principal component 2']))
+        # print(min(df['Principal component 2']))
+        
 
     if not path.isdir("C:/Users/Bertosm/Desktop/dataset/"):
         makedirs("C:/Users/Bertosm/Desktop/dataset/")

@@ -59,24 +59,24 @@ class perceptron():
             print("neuronas de entrada perceptron: {} procedentes de GNG".format(self.gng_neupy.graph.n_nodes))
             
             # inicialize between -0.01 to 0.01 (Code from SI1)
-            self.weights =np.random.RandomState(seed=1).normal(loc=0, scale=0.01, size=self.gng_neupy.graph.n_nodes+1)
-            print("weight -0.01 to 0.01")
+            # self.weights =np.random.RandomState(seed=1).normal(loc=0, scale=0.01, size=self.gng_neupy.graph.n_nodes+1)
+            # print("weight -0.01 to 0.01")
             
             # ini0cialize between 0 to 1 (np.random)
-            # self.weights =np.random.rand(self.gng_neupy.graph.n_nodes+1)
-            # print("weight 0 to 1")
+            self.weights =np.random.rand(self.gng_neupy.graph.n_nodes+1)
+            print("weight 0 to 1")
             
         else:
             print("neuronas de entrada perceptron: {} procedentes del conjunto de datos (No GNG)".format(trainDataX.shape[1]))
             
             # inicialize between -0.01 to 0.01 (Code from SI1)
-            self.weights =np.random.RandomState(seed=1).normal(loc=0, scale=0.01, size=trainDataX.shape[1]+1)
-            print("weight -0.01 to 0.01")
+            # self.weights =np.random.RandomState(seed=1).normal(loc=0, scale=0.01, size=trainDataX.shape[1]+1)
+            # print("weight -0.01 to 0.01")
             
             
             # inicialize between 0 to 1 (np.random)
-            # self.weights =np.random.rand(trainDataX.shape[1]+1)
-            # print("weight 0 to 1")
+            self.weights =np.random.rand(trainDataX.shape[1]+1)
+            print("weight 0 to 1")
             
             
         # print("weightsShape: ", len(self.weights))
