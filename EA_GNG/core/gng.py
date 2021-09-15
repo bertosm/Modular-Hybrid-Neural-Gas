@@ -27,11 +27,9 @@ from EA_GNG.GNGperceptron import GNG_perceptron
 
 from neupy import utils
 from neupy.algorithms.competitive.growing_neural_gas import GrowingNeuralGas, NeuronNode, NeuralGasGraph, sample_data_point,StopTraining
-from neupy.algorithms.base import BaseSkeleton
-from neupy.utils import iters
 
 
-from EA_GNG.core.method.metrics import evaluateUnsupervisedClusteringQuality
+from EA_GNG.core.method.metrics import evaluateUnsupervisedClusteringQuality, evaluateSupervisedClusteringQuality, saveSupervisedClusteringMetrics_history
 from EA_GNG.core.method.statistics import round_decimals_down
 
 
@@ -52,7 +50,7 @@ neuronCount = contador(0)
        
 
     
-def neupy_growingneuralgas(trainDataX, param_dict, ax, fig, trainLabelsY = None, testDataX = None, testLabel=None, saveProcess=False, saving_path = None): 
+def neupy_growingneuralgas(trainDataX, param_dict, ax, fig, trainLabelsY = None, testDataX = None, testLabel=None, saveProcess=False, saving_path = None, sTitle = ""): 
     """growing neural network algorithm from neupy packeage"""
     
     utils.reproducible(param_dict['seed'])
@@ -88,7 +86,7 @@ def neupy_growingneuralgas(trainDataX, param_dict, ax, fig, trainLabelsY = None,
     # print("train Data: ", trainDataX)
     # print("train Label: ", trainLabelsY)
     print("saving_path preGNG: ", saving_path)
-    bestCalinski, bestSilhouette = gng_neupy.train(trainDataX, trainLabelsY, X_test=testDataX, y_test=testLabel, epochs=param_dict['epochs'], countConfig = param_dict["count"], saveProcess = saveProcess, saving_path=saving_path)
+    bestCalinski, bestSilhouette = gng_neupy.train(trainDataX, trainLabelsY, X_test=testDataX, y_test=testLabel, epochs=param_dict['epochs'], countConfig = param_dict["count"], saveProcess = saveProcess, saving_path=saving_path, sTitle = sTitle)
     
     
     #Marca de tiempo final, Tiempo que tarda en entrenar.
@@ -133,10 +131,10 @@ def loop_gng(config, saving_path, df, PCA=False, PCA_n_components = 3, hibrid=Fa
         # print("Dataset selected features")
         
         # normalizing Inputs v1
-        # media = np.mean(df.iloc[:, :-1])
-        # desviacion = np.std(df.iloc[:, :-1])
-        # df.iloc[:, :-1] = (df.iloc[:, :-1] - media) / desviacion
-        # print("Dataset normalized: ",df)  
+        media = np.mean(df.iloc[:, :-1])
+        desviacion = np.std(df.iloc[:, :-1])
+        df.iloc[:, :-1] = (df.iloc[:, :-1] - media) / desviacion
+        print("Dataset normalized: ",df)  
         
         
         if PCA and len(df.columns.tolist()) > 3:
@@ -250,10 +248,11 @@ class neupy_gng(GrowingNeuralGas):
             self.graph.add_node(neupy_NamedNeuronNode(sample.reshape(1, -1)))
             
            
-    def train(self, trainData, y_train = None, X_test = None, y_test = None, epochs=100, countConfig = 1, saveProcess=False, saving_path = None):
+    def train(self, trainData, y_train = None, X_test = None, y_test = None, epochs=100, countConfig = 1, saveProcess=False, saving_path = None, sTitle = ""):
 
         # really rushed. It must go on the constructor!
         self.count = countConfig
+        self.sTitle = sTitle
         
         print("saving_path pre training: ", saving_path)
         # print("train data preFloat: ", trainData)
@@ -359,7 +358,10 @@ class neupy_gng(GrowingNeuralGas):
                 node.error *= error_decay_rate
 
         if saveProcess and saving_path != None:
-            calinski, silhouette = saveGraphPerEpoch(graph, X_train, epoch, saving_path, y_train, X_test, y_test, data, self.count, bestCalinski, bestSilhouette, max_nodes)
+            if epoch == 1:
+                saveSupervisedClusteringMetrics_history(saving_path, None, count = self.count, sTitle= self.sTitle)
+                
+            calinski, silhouette = saveGraphPerEpoch(graph, X_train, epoch, saving_path, y_train, X_test, y_test, data, self.count, sTitle=self.sTitle, bestCalinski=bestCalinski, bestSilhouette=bestSilhouette, max_nodes=max_nodes)
         else:
             calinski=0
             silhouette=-2
@@ -408,7 +410,7 @@ class neupy_gng(GrowingNeuralGas):
         
 
 
-def saveGraphPerEpoch(graph, trainData, epoch, saving_path,  trainLabel, testData, testLabel, data=None, count = 1, bestCalinski=0, bestSilhouette= -2, max_nodes=2):
+def saveGraphPerEpoch(graph, trainData, epoch, saving_path,  trainLabel, testData, testLabel, data=None, count = 1, sTitle= "", bestCalinski=0, bestSilhouette= -2, max_nodes=2):
     
     # print("Calinski: ", bestCalinski)
     # print("numero de neuronas: ", len(graph.nodes))
@@ -426,7 +428,12 @@ def saveGraphPerEpoch(graph, trainData, epoch, saving_path,  trainLabel, testDat
             # print("test Y: ", testLabel.shape)
             # print(" labelsPred: ", len(labelsPred))
         
-            dbs, calinski, sil= evaluateUnsupervisedClusteringQuality(testData, testLabel, labelsPred)
+            dbs, calinski, sil= evaluateUnsupervisedClusteringQuality(data = testData, labelsPred = labelsPred)
+            
+            metrics = dict()
+            metrics["homogeneity"], metrics["completeness"], metrics["v_measure"], metrics["ari"], metrics["normalizedmutualInfo"], metrics["fowlkes"], metrics["purity"] = evaluateSupervisedClusteringQuality(data = testData, labelsTrue=testLabel, labelsPred = labelsPred)
+            
+            saveSupervisedClusteringMetrics_history(saving_path, metrics, count, sTitle, epoch) 
             
             # Proceso de guardado de figura en cada epoch
             
@@ -443,12 +450,8 @@ def saveGraphPerEpoch(graph, trainData, epoch, saving_path,  trainLabel, testDat
                 showResult(graph, color_dict, ax2, fig3d, data.columns.tolist(), dictcolor_label)
                 ax2.set_title('GNG_NEUPY_PACKAGE - BestCalinski')
         
-                print("saving_path: ", saving_path)
                 saving_path_Calinski = "{}Config{}-CalinskiBestConfig".format(saving_path, count)
-                print("saving_path figura: ", saving_path_Calinski)
-                
-                # AÑADIR FICHERO CON HISTORIAL?
-                
+                                
                 saveBestConfig(fig3d, fig, saving_path_Calinski)
                 
                 bestCalinski = calinski
@@ -464,10 +467,7 @@ def saveGraphPerEpoch(graph, trainData, epoch, saving_path,  trainLabel, testDat
                 showResult(graph, color_dict, ax2, fig3d, data.columns.tolist(), dictcolor_label)
                 ax2.set_title('GNG_NEUPY_PACKAGE - BestSilhoutte')
             
-                # AÑADIR FICHERO CON HISTORIAL?
-                print("saving_path: ", saving_path)
                 saving_path_silhoutte = "{}Config{}-SilhoutteBestConfig".format(saving_path, count)
-                print("saving_path figura: ", saving_path_silhoutte)
                 
                 saveBestConfig(fig3d, fig, saving_path_silhoutte)
                 

@@ -258,7 +258,7 @@ def recursive_neupy(node, color_dict, color_vector, graph, n_clusters, basecolor
     
 
     
-def maketitle(param_dict, nameDataset):
+def maketitle(param_dict):
     
     """creating a string from a dictionary"""
     

@@ -16,15 +16,29 @@ from EA_GNG.core.dataset import loadDataset_CN_MCI_AD_fromPKL
 
 warnings.filterwarnings("ignore")
 
-# filesPath = "C:/Users/Bertosm/Desktop/GNG-Alzheimer-Comciencia/Datasets/MCI-AD/"
-# # filesPath = "C:/Users/Bertosm/Desktop/Datasets/"
-loadedDataset =  dict()
-loadedDataset["pkl"] = {"filePath":"C:/Users/alber/Desktop/GNG/Datasets/CN-MCI-AD/",
-                        "fileName":"CN-MCI-AD-ADNI1-prepared_data-20210901_17h20m.pkl",
-                        "num_components":4,
-                        "scaled":"RobustScaler",
-                        "projection":"FactorAnalysis"
-                        }
+
+
+filesPath = "C:/Users/alber/Desktop/GNG-Alzheimer-Comciencia/Datasets/MCI-AD/"
+loadedDataset = EA_GNG.EA_GNG.loadDatasets(filesPath, concretFile='baseline_MCI-AD_ADNI2.xlsx')
+
+
+
+# loadedDataset =  dict()
+# loadedDataset["pkl"] = {"filePath":"C:/Users/alber/Desktop/GNG/Datasets/CN-MCI-AD/",
+#                         "fileName":"CN-MCI-AD-ADNI1-prepared_data-20210901_17h20m.pkl",
+#                         "num_components":4,
+#                         "scaled":"RobustScaler",
+#                         "projection":"FactorAnalysis"
+#                         }
+
+# loadedDataset["pkl"] = {"filePath":"C:/Users/alber/Desktop/GNG/Datasets/CN-MCI-AD/",
+#                         "fileName":"CN-MCI-AD-ADNI1-prepared_data-20210901_17h20m.pkl",
+#                         "num_components":3,
+#                         "scaled":"RobustScaler",
+#                         "projection":"FactorAnalysis"
+#                         }
+
+
 # list_epoch = (500, )
 # list_max_age= (14, 16, 18, 20, 22, 24, 26, 28, 30)
 # list_lambda = (158, 315, 625, 800, 948, 1250)
@@ -37,11 +51,11 @@ loadedDataset["pkl"] = {"filePath":"C:/Users/alber/Desktop/GNG/Datasets/CN-MCI-A
 # X_train, X_test, Y_train, Y_test = loadDataset_partitionared_CN_MCI_AD_fromPKL(datasetpath, datasetFile, num_components=4, scaled = "RobustScaler", projection="FactorAnalysis")
 
 list_epoch = (500, )
-list_max_age= (6, )
-list_lambda = (625,)
-list_max_nodes = (27, )
-list_step = (0.2, )
-list_neighbour_step = (0.05, )
+list_max_age= (6, 8, 10, 12, 16, 20, 22, 26, 30, 40,)
+list_lambda = (375, 625, 750, 1125)
+list_max_nodes = (10, 20, 30, 40, 50, 60)
+list_step = (0.3, 0.2, 0.1)
+list_neighbour_step = (0.05, 0.006, 0.0006)
 
 # """Parámetros perceptrón
 
@@ -68,12 +82,12 @@ dictConfig = EA_GNG.EA_GNG.makeConfigDict(list_epoch, list_max_age, list_lambda,
                                           list_neighborsActivation=list_neighborsActivation)
 
 
-savingPathGNG= "C:/Users/alber/Desktop/testGNG/"
+# savingPathGNG= "C:/Users/alber/Desktop/GNG-AN_MCI_AD-balanced-RobustScaled-FactorAnalysis-partitionaired-4components-SecondTest/"
 
-# savingPathGNG= "C:/Users/Bertosm/Desktop/NOTPCA-onlyPerceptronBackpropagation-weight00to01/"
+savingPathGNG= "C:/Users/alber/Desktop/MCI-AD_NOTPCA-StandardScaler-GNGv2/"
 # savingPathGNG= "C:/Users/alber/Desktop/Articulo/Articulo-Portatil/Pruebas/pruebaPorcentajeClusters/"
 # savingPathGNG= "C:/Users/alber/Desktop/3ComponentesPCA-Articulo/Pruebas/ProbandoCodigo/"
 
-EA_GNG.EA_GNG.loopGrowingNeuralGas_perceptron(dictConfig, savingPathGNG, loadedDatasets = loadedDataset,  PCA=True, PCA_n_components = 3, savedGNG=False, saveProcess=True, hibrid =False)
+EA_GNG.EA_GNG.loopGrowingNeuralGas_perceptron(dictConfig, savingPathGNG, loadedDatasets = loadedDataset,  PCA=False, PCA_n_components = 3, savedGNG=False, saveProcess=True, hibrid =False)
 
 

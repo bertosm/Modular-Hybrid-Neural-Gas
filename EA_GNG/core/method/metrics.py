@@ -146,7 +146,7 @@ def evaluateSupervisedClusteringQuality(data, labelsTrue, labelsPred, seed = 1, 
     return homogeneity, completeness, v_measure, ari, normalizedmutualInfo, fowlkes, purity
   
 
-def saveClassificationMetrics(saving_path, metrics, count = 1):
+def saveClassificationMetrics(saving_path, metrics, count = 1, sTitle = ""):
     
     if count == '1':
         # Open file to save the metrics for first time. It is reset if the file already exists.
@@ -156,7 +156,6 @@ def saveClassificationMetrics(saving_path, metrics, count = 1):
         # Open file that already exists or create it.
         file_Classification_metrics = open("{}config_param_clusteringQualitySupervisedMetrics.txt".format(saving_path), "a") #Open/Writting continue file, unsupervised metrics obtained
 
-    sTitle= "" # Pasar configuración Por Parámetro!
     # Save parameters and metrics results
 
     file_Classification_metrics.write("config {};{};accuracy:{};precision:{};recall:{};f1Score:{};sensitivity:{};specificity:{}\n".format(count, sTitle.replace('\n',' '),
@@ -167,17 +166,16 @@ def saveClassificationMetrics(saving_path, metrics, count = 1):
      
      
 
-def saveSupervisedClusteringMetrics(saving_path, metrics, count = 1):
+def saveSupervisedClusteringMetrics(saving_path, metrics, count = 1, sTitle = ""):
     
     if count == '1':
         # Open file to save the metrics for first time. It is reset if the file already exists.
         file_supervised_clusteringQuality_metrics = open("{}config_param_clusteringQualitySupervisedMetrics.txt".format(saving_path), "w") #Open/writting over file, unsupervised metrics obtained
-        file_supervised_clusteringQuality_metrics.write("config;params;homogeneity;completeness;v_measure;adjustedrand;normalizedmutualInfo;fowlkes;purity\n')\n")
+        file_supervised_clusteringQuality_metrics.write("config;params;homogeneity;completeness;v_measure;adjustedrand;normalizedmutualInfo;fowlkes;purity\n")
     else:
         # Open file that already exists or create it.
         file_supervised_clusteringQuality_metrics = open("{}config_param_clusteringQualitySupervisedMetrics.txt".format(saving_path), "a") #Open/Writting continue file, unsupervised metrics obtained
 
-    sTitle= "" # Pasar configuración Por Parámetro!
     # Save parameters and metrics results
     file_supervised_clusteringQuality_metrics.write("config {};{};homogeneity:{};completeness:{};v_measure:{};adjustedrand:{};normalizedmutualInfo:{};fowlkes:{};purity:{}\n".format(count, sTitle.replace('\n',' '),
                                                                                                                                                                                      metrics['homogeneity'], metrics['completeness'], 
@@ -185,9 +183,29 @@ def saveSupervisedClusteringMetrics(saving_path, metrics, count = 1):
                                                                                                                                                                                      metrics['ari'], metrics['normalizedmutualInfo'], 
                                                                                                                                                                                      metrics['fowlkes'], metrics['purity']))
     file_supervised_clusteringQuality_metrics.close()
+
+def saveSupervisedClusteringMetrics_history(saving_path, metrics, count = 1, sTitle = "", epoch = 0):
+    
+    if epoch == 0:
+        # Open file to save the metrics for first time. It is reset if the file already exists.
+        file_supervised_clusteringQuality_metrics = open("{}config{}_param_clusteringQualitySupervisedMetrics.txt".format(saving_path, count), "w") #Open/writting over file, unsupervised metrics obtained
+        file_supervised_clusteringQuality_metrics.write("epoch;params;homogeneity;completeness;v_measure;adjustedrand;normalizedmutualInfo;fowlkes;purity\n")
+        file_supervised_clusteringQuality_metrics.close()
+        return
+    else:
+        # Open file that already exists or create it.
+        file_supervised_clusteringQuality_metrics = open("{}config{}_param_clusteringQualitySupervisedMetrics.txt".format(saving_path, count), "a") #Open/Writting continue file, unsupervised metrics obtained
+
+    # Save parameters and metrics results
+    file_supervised_clusteringQuality_metrics.write("epoch {};{};homogeneity:{};completeness:{};v_measure:{};adjustedrand:{};normalizedmutualInfo:{};fowlkes:{};purity:{}\n".format(epoch, sTitle.replace('\n',' '),
+                                                                                                                                                                                     metrics['homogeneity'], metrics['completeness'], 
+                                                                                                                                                                                     metrics['v_measure'], 
+                                                                                                                                                                                     metrics['ari'], metrics['normalizedmutualInfo'], 
+                                                                                                                                                                                     metrics['fowlkes'], metrics['purity']))
+    file_supervised_clusteringQuality_metrics.close()
     
 
-def saveUnsupervisedClusteringMetrics(saving_path, count = 1, calinski = -1, silhouette = -1, dbs = -1):
+def saveUnsupervisedClusteringMetrics(saving_path, count = 1, calinski = -1, silhouette = -1, dbs = -1, sTitle = ""):
     
     if count == '1':
         # Open file to save the metrics for first time. It is reset if the file already exists.
@@ -197,7 +215,6 @@ def saveUnsupervisedClusteringMetrics(saving_path, count = 1, calinski = -1, sil
         # Open file that already exists or create it.
         file_unsupervised_clusteringQuality_metrics = open("{}config_param_clusteringQualityUnsupervisedMetrics.txt".format(saving_path), "a") #Open/Writting continue file, unsupervised metrics obtained
 
-    sTitle= "" # Pasar configuración Por Parámetro!
     # Save parameters and metrics results
     file_unsupervised_clusteringQuality_metrics.write("config {};{};calinski:{};silhouette:{};daviesBouldin:{}\n".format(count,sTitle.replace('\n',' '),
                                                                                                     calinski, silhouette, dbs))

@@ -307,22 +307,26 @@ def growingNeuralGas(param_dict, df, saving_path, target = "DX_bl", labelsOrderi
     
     print("size training data: ", trainDataX.shape[0])
     print("size testing data: ", testDataX.shape[0])
-    print("size training data: ", trainLabelsTrueY.shape[0])
-    print("size testing data: ", testLabelsTrueY.shape[0])
+    
+    values, counts = np.unique(trainLabelsTrueY, return_counts=True)
+    print("size training data: ", trainLabelsTrueY.shape[0], "classes: ", values, counts)
+    
+    values, counts = np.unique(testLabelsTrueY, return_counts=True)
+    print("size testing data: ", testLabelsTrueY.shape[0], "classes: ", values, counts)
     param_dict['n_features'] = trainDataX.shape[1]
 
+    sTitle = maketitle(param_dict)
+    
     if not saveProcess:
         
-        sTitle = maketitle(param_dict, nameDataset)
         fig3d, fig, ax1, ax2 = createFigures(nameDataset, param_dict["typeDataScaling"], sTitle, param_dict['n_features'])
         columns = df.columns.tolist()
         showdata(trainDataX,trainLabelsTrueY, ax1, fig3d, columns, nameDataset)
     
     else:
-        sTitle = ""
         fig3d, fig, ax1, ax2 = None, None, None, None
         
-    timeNeupyGNG, n_clusters, labelsPred, bestCalinski, bestSilhouette = gng.neupy_growingneuralgas(trainDataX, param_dict, ax2, fig3d, trainLabelsY=trainLabelsTrueY, testDataX = testDataX, testLabel=testLabelsTrueY, saveProcess=saveProcess, saving_path = saving_path)
+    timeNeupyGNG, n_clusters, labelsPred, bestCalinski, bestSilhouette = gng.neupy_growingneuralgas(trainDataX, param_dict, ax2, fig3d, trainLabelsY=trainLabelsTrueY, testDataX = testDataX, testLabel=testLabelsTrueY, saveProcess=saveProcess, saving_path = saving_path, sTitle= sTitle)
   
     print("best Calinski founded: ", bestCalinski)
     print("best Silhouette founded: ", bestSilhouette)
@@ -335,18 +339,18 @@ def growingNeuralGas(param_dict, df, saving_path, target = "DX_bl", labelsOrderi
         
         # Not supervised metrics at end training model.
         metrics['dbs'], metrics['calinski'], metrics['sil'] = evaluateUnsupervisedClusteringQuality(testDataX, labelsPred, param_dict['seed'], verbose)
-        saveUnsupervisedClusteringMetrics(saving_path, count = param_dict["count"], calinski = metrics['calinski'], silhouette = metrics['sil'], dbs = metrics["dbs"])
+        saveUnsupervisedClusteringMetrics(saving_path, count = param_dict["count"], calinski = metrics['calinski'], silhouette = metrics['sil'], dbs = metrics["dbs"], sTitle = sTitle)
 
         # Supervised metrics at end training model.
         metrics['homogeneity'], metrics['completeness'], metrics['v_measure'], metrics['ari'], metrics['normalizedmutualInfo'], metrics['fowlkes'], metrics['purity'] = evaluateSupervisedClusteringQuality(testDataX, testLabelsTrueY, labelsPred, 
                                                                                                                                                                                                              param_dict['seed'], verbose)
-        saveSupervisedClusteringMetrics(saving_path, metrics = metrics, count = param_dict["count"])
+        saveSupervisedClusteringMetrics(saving_path, metrics = metrics, count = param_dict["count"], sTitle = sTitle)
     
         ax2.set_title('GNG_NEUPY_PACKAGE - Nº clusters= {}'.format(n_clusters))
         saveFigures(fig3d, fig, saving_path, param_dict)
         
     else:
-        saveUnsupervisedClusteringMetrics(saving_path, count = param_dict["count"], calinski = bestCalinski, silhouette = bestSilhouette, dbs = "notCalculated")
+        saveUnsupervisedClusteringMetrics(saving_path, count = param_dict["count"], calinski = bestCalinski, silhouette = bestSilhouette, dbs = "notCalculated", sTitle = sTitle)
  
     
         
@@ -415,11 +419,11 @@ def loopGrowingNeuralGas_perceptron(loopDict, saving_path, loadedDatasets = None
         print("configuraciones = {}, conjunto de datos = {} ->> lanzamientos: {}\n".format(len(loopDict), len(loadedDatasets), len(loopDict) * len(loadedDatasets)))
         for dataset in loadedDatasets:
             #paralel llama a loop_gng
-            Parallel(n_jobs=1)(delayed(gng.loop_gng)(loopDict[config], saving_path, loadedDatasets[dataset], PCA, PCA_n_components, hibrid, takeTypeDataScaling(dataset), labelsOrdering, dataset, seed, shuffle_data, verbose, savedGNG=savedGNG, saveProcess=saveProcess) for config in loopDict)
+            Parallel(n_jobs=-1)(delayed(gng.loop_gng)(loopDict[config], saving_path, loadedDatasets[dataset], PCA, PCA_n_components, hibrid, takeTypeDataScaling(dataset), labelsOrdering, dataset, seed, shuffle_data, verbose, savedGNG=savedGNG, saveProcess=saveProcess) for config in loopDict)
     else:
         print("lanzando paralelismo priorizando conjunto de datos\n")
         for config in loopDict:
-            Parallel(n_jobs=1)(delayed(gng.loop_gng)(loopDict[config], saving_path, loadedDatasets[dataset], PCA, PCA_n_components, hibrid, takeTypeDataScaling(dataset), labelsOrdering, dataset, seed, shuffle_data, verbose, savedGNG=savedGNG, saveProcess=saveProcess ) for dataset in loadedDatasets)       
+            Parallel(n_jobs=-1)(delayed(gng.loop_gng)(loopDict[config], saving_path, loadedDatasets[dataset], PCA, PCA_n_components, hibrid, takeTypeDataScaling(dataset), labelsOrdering, dataset, seed, shuffle_data, verbose, savedGNG=savedGNG, saveProcess=saveProcess ) for dataset in loadedDatasets)       
         
         
 
